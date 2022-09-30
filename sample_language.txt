@@ -1,0 +1,31 @@
+###### URL
+# @sync http://192.168.100.2/dns-records?domain=.sync-ops.com&domain=.sync-svc.com
+# @unsafe true
+# @interval auto
+
+# @sync source=http://192.168.100.2/dns-records?domain=.sync-ops.com&domain=.sync-svc.com, unsafe=true, interval=auto
+
+###### kubectl
+# @sync kubectl
+# @context microk8s
+# @interval auto
+
+# @sync kubectl
+# @params context=microk8s, interval=auto
+
+# @sync source=kubectl, context=microk8s, interval=auto
+
+###### local file
+# @sync /home/user1/temp_dns
+
+
+
+###### sync block (output)
+
+# @begin <config_hash>-<data_hash>
+# @end <config_hash>-<data_hash>
+
+
+## Parsers
+https://github.com/alecthomas/participle/blob/master/_examples/sql/main.go
+
