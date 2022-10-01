@@ -6,6 +6,7 @@ import (
 
 	"github.com/0xcfff/dnssync/model"
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_hostsBackend_ReadState(t *testing.T) {
@@ -91,24 +92,10 @@ func TestDefaultBackend(t *testing.T) {
 }
 
 func TestNewBackend(t *testing.T) {
-	type args struct {
-		hostsFilePath *string
-		fs            afero.Fs
-	}
-	tests := []struct {
-		name string
-		args args
-		want model.Backend
-	}{
-		{"test1", args{nil, afero.NewOsFs()}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			backend := DefaultBackend()
-			backend.ReadState()
-			// if got := NewBackend(tt.args.hostsFilePath, tt.args.fs); !reflect.DeepEqual(got, tt.want) {
-			// 	t.Errorf("NewBackend() = %v, want %v", got, tt.want)
-			// }
-		})
-	}
+	t.Run("create default backend", func(t *testing.T) {
+		backend := DefaultBackend()
+		state, err := backend.ReadState()
+		assert.NoError(t, err)
+		assert.NotNil(t, state)
+	})
 }

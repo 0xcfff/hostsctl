@@ -1,6 +1,7 @@
 package hosts
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"runtime"
 
@@ -26,17 +27,21 @@ func (backend *hostsBackend) ReadState() (*model.BackendState, error) {
 
 	defer file.Close()
 
-	// reader := utils.NewHashCalcReader(file, nil)
-
 	stats, err := file.Stat()
 
 	if err != nil {
 		return nil, fmt.Errorf("Error reading stats %w", err)
 	}
 
-	fmt.Println("Size: ", stats.Size())
+	hostsContent, err := ParseHostsFile(file)
+	if err != nil {
+		return nil, err
+	}
 
-	return &model.BackendState{}, nil
+	state := convertToBackendFormat(hostsContent)
+	state.LastUpdated = stats.ModTime()
+
+	return state, nil
 }
 
 func (backend *hostsBackend) UpdateState(changeSet model.BackendStateChangeSet) (*model.BackendState, error) {
@@ -44,10 +49,10 @@ func (backend *hostsBackend) UpdateState(changeSet model.BackendStateChangeSet) 
 }
 
 func DefaultBackend() model.Backend {
-	return NewBackend(nil, nil)
+	return NewBackend("", nil)
 }
 
-func NewBackend(hostsFilePath *string, fs afero.Fs) model.Backend {
+func NewBackend(hostsFilePath string, fs afero.Fs) model.Backend {
 
 	backend := hostsBackend{}
 
@@ -57,10 +62,10 @@ func NewBackend(hostsFilePath *string, fs afero.Fs) model.Backend {
 		panic("not implemented")
 
 	} else {
-		if hostsFilePath == nil || *hostsFilePath == "" {
+		if hostsFilePath == "" {
 			backend.etcHostsPath = PathHostsFile
 		} else {
-			backend.etcHostsPath = *hostsFilePath
+			backend.etcHostsPath = hostsFilePath
 		}
 
 		backend.fs = fs
@@ -70,4 +75,43 @@ func NewBackend(hostsFilePath *string, fs afero.Fs) model.Backend {
 	}
 
 	return &backend
+}
+
+func convertToBackendFormat(parsedContent *HostsFileContent) *model.BackendState {
+	state := model.BackendState{
+		ContentHash: parsedContent.contentHash,
+	}
+
+	for _, sourceSync := range parsedContent.SyncBlocks {
+		props := make(map[string]string)
+		for _, p := range sourceSync.InlineProps {
+			props[p.Name] = p.Value
+		}
+		sourceConfig := model.NewSourceConfig(props)
+		source := model.SourceState{
+			Config: sourceConfig,
+			Data: &sourceStateWrapper{
+				sourceBlock: sourceSync,
+			},
+		}
+		state.Sources = append(state.Sources, source)
+	}
+	return &state
+}
+
+type sourceStateWrapper struct {
+	sourceBlock *ConfigBlock
+}
+
+func (w *sourceStateWrapper) DataHash() []byte {
+	hasher := sha1.New()
+
+	for _, ip := range w.sourceBlock.Data.IPRecords {
+		hasher.Write([]byte(ip.IP))
+		for _, al := range ip.Aliases {
+			hasher.Write([]byte(al))
+		}
+	}
+
+	return hasher.Sum(nil)
 }

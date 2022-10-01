@@ -1,6 +1,6 @@
 package model
 
 type SourceState struct {
-	config SourceConfig
-	data   SourceData
+	Config SourceConfig
+	Data   SourceData
 }

@@ -40,13 +40,13 @@ func matchData(d1, d2 SourceData) MatchResult {
 
 func (this SourceState) Matches(other SourceState) MatchResult {
 
-	matchConfigs := matchConfigs(this.config, other.config)
+	matchConfigs := matchConfigs(this.Config, other.Config)
 
 	if matchConfigs == MATCH_FULL {
 		return MATCH_FULL
 	}
 
-	matchData := matchData(this.data, other.data)
+	matchData := matchData(this.Data, other.Data)
 
 	if matchData == MATCH_FULL {
 		return MATCH_FULL

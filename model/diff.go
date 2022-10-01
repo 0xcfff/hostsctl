@@ -14,8 +14,8 @@ const (
 )
 
 func (this SourceState) Differs(other SourceState) DiffResult {
-	configsEqual := bytes.Equal(this.config.ConfigHash(), other.config.ConfigHash())
-	dataEqual := bytes.Equal(this.data.DataHash(), other.data.DataHash())
+	configsEqual := bytes.Equal(this.Config.ConfigHash(), other.Config.ConfigHash())
+	dataEqual := bytes.Equal(this.Data.DataHash(), other.Data.DataHash())
 
 	if configsEqual && dataEqual {
 		return DIFF_NONE

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/sha1"
 	"fmt"
+	"hash"
 	"io"
 	"regexp"
 	"strings"
@@ -58,11 +59,12 @@ type DataBlock struct {
 	IPRecords []*IPRecord
 }
 
-type HostsFile struct {
+type HostsFileContent struct {
 	Pos lexer.Position
 
-	IPRecords  []*IPRecord    `@@*`
-	SyncBlocks []*ConfigBlock `@@*`
+	IPRecords   []*IPRecord    `@@*`
+	SyncBlocks  []*ConfigBlock `@@*`
+	contentHash []byte
 }
 
 var (
@@ -77,7 +79,7 @@ var (
 		rule("Punct", `[,.<>(){}=:]`),
 		rule("Comment", `//.*`),
 	})
-	HostsParser = participle.MustBuild[HostsFile](
+	HostsParser = participle.MustBuild[HostsFileContent](
 		participle.Lexer(def),
 		participle.Unquote("String"),
 		participle.Elide("Whitespace"),
@@ -105,8 +107,9 @@ func rule(name, pattern string) lexer.SimpleRule {
 
 type hostsParseContext struct {
 	scanner      bufio.Scanner
+	hasher       hash.Hash
 	mode         ParseMode
-	target       *HostsFile
+	target       *HostsFileContent
 	curLine      string
 	lineNum      int
 	lineReturned bool
@@ -361,16 +364,17 @@ func newHostsParseContext(r io.Reader) *hostsParseContext {
 	hasher := sha1.New()
 	rr := io.TeeReader(r, hasher)
 	scanner := bufio.NewScanner(rr)
-	result := HostsFile{}
+	result := HostsFileContent{}
 	parser := hostsParseContext{
 		scanner: *scanner,
 		target:  &result,
+		hasher:  hasher,
 	}
 
 	return &parser
 }
 
-func (ctx *hostsParseContext) parse() (*HostsFile, error) {
+func (ctx *hostsParseContext) parse() (*HostsFileContent, error) {
 
 	result := ctx.target
 
@@ -407,10 +411,11 @@ func (ctx *hostsParseContext) parse() (*HostsFile, error) {
 		}
 	}
 
+	result.contentHash = ctx.hasher.Sum(nil)
 	return result, nil
 }
 
-func ParseHostsFile(r io.Reader) (*HostsFile, error) {
+func ParseHostsFile(r io.Reader) (*HostsFileContent, error) {
 	ctx := newHostsParseContext(r)
 	result, err := ctx.parse()
 	return result, err

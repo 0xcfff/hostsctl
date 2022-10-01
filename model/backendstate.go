@@ -4,6 +4,7 @@ import "time"
 
 type BackendState struct {
 	LastUpdated time.Time
+	ContentHash []byte
 	Sources     []SourceState
 }
 
