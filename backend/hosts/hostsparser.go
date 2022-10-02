@@ -101,153 +101,60 @@ func ParseHostsFile(r io.Reader, parseMode ParseMode) (*HostsFileContent, error)
 	return result, err
 }
 
-func (ctx *hostsParseContext) readLine() (string, bool) {
-	if ctx.lineReturned {
-		ctx.lineReturned = false
-		ctx.lineNum++
-		return ctx.curLine, true
+func newHostsParseContext(r io.Reader, parseMode ParseMode) *hostsParseContext {
+	hasher := sha1.New()
+	rr := io.TeeReader(r, hasher)
+	scanner := bufio.NewScanner(rr)
+	result := HostsFileContent{}
+	parser := hostsParseContext{
+		scanner: *scanner,
+		target:  &result,
+		hasher:  hasher,
+		mode:    parseMode,
 	}
 
-	if ctx.scanner.Scan() {
-		ctx.curLine = ctx.scanner.Text()
-		ctx.lineNum++
-		return ctx.curLine, true
-	}
-
-	ctx.curLine = ""
-
-	return "", false
+	return &parser
 }
 
-func (ctx *hostsParseContext) currentLine() (string, bool) {
-	if ctx.lineReturned {
-		panic("this method should never be called with such a state")
-	}
-	return ctx.curLine, true
-}
+func (ctx *hostsParseContext) parse() (*HostsFileContent, error) {
 
-func (ctx *hostsParseContext) returnLine() {
-	if ctx.lineReturned {
-		panic("this method should never be called with such a state")
-	}
-	ctx.lineReturned = true
-	ctx.lineNum--
-}
-
-func (ctx *hostsParseContext) error() error {
-	return ctx.scanner.Err()
-}
-
-func (ctx *hostsParseContext) parseIpLine() (*IPRecord, error) {
-	line, ok := ctx.currentLine()
-	if !ok {
-		panic("should never be called in this state")
-	}
-
-	parts := strings.Fields(line)
-	if len(parts) < 2 || !rxIpAddress.MatchString(parts[0]) {
-		return nil, fmt.Errorf("wrong format of line which starts as IP alias line, line: %d", ctx.lineNum)
-	}
-
-	record := IPRecord{
-		Pos: Position{
-			Line: ctx.lineNum,
-		},
-		IP: parts[0],
-	}
-
-	aliases := parts[1:]
-
-	for _, val := range aliases {
-		if strings.HasPrefix(val, "#") {
-			break
-		}
-		record.Aliases = append(record.Aliases, val)
-	}
-
-	if len(record.Aliases) == 0 {
-		return nil, fmt.Errorf("wrong format of line which starts as IP alias line, line: %d", ctx.lineNum)
-	}
-
-	return &record, nil
-}
-
-func trimPrefixRegex(src string, rx *regexp.Regexp) string {
-	prefix := rx.FindString(src)
-	rest := strings.TrimPrefix(src, prefix)
-	return rest
-}
-
-func (ctx *hostsParseContext) parseInlineProps(trimmedLine string) []*InlineProperty {
-	var result []*InlineProperty
-
-	if !rxSingleLinePropsCheck.MatchString(trimmedLine) {
-		return nil
-	}
-
-	syncProps := rxSingleLineProps.FindAllStringSubmatch(trimmedLine, -1)
-	for _, match := range syncProps {
-		prop := InlineProperty{
-			Pos: Position{
-				Line: ctx.lineNum,
-			},
-			Name:  match[1],
-			Value: strings.TrimSuffix(match[2], ","),
-		}
-		result = append(result, &prop)
-	}
-	return result
-}
-
-func (ctx *hostsParseContext) parseDataBlock() (*SyncDataBlock, error) {
-	line, ok := ctx.currentLine()
-	if !ok {
-		panic("should never be called in this state")
-	}
-
-	if !rxDataBlockBegin.MatchString(line) {
-		return nil, fmt.Errorf("Line %d is not a start sync line", ctx.lineNum)
-	}
-
-	lastDataLine := ctx.lineNum
-	record := SyncDataBlock{
-		Pos: Position{Line: ctx.lineNum},
-	}
+	result := ctx.target
 
 	for {
-		line, ok = ctx.readLine()
-
+		line, ok := ctx.readLine()
 		if !ok {
-			log.Warnf("Incomplete data sync block, line: %d", ctx.lineNum)
-			if ctx.mode != Safe {
-				return nil, fmt.Errorf("Incomplete data sync block, line: %d", ctx.lineNum)
+			if err := ctx.error(); err != nil {
+				return nil, err
 			}
-			break
-		} else if rxEmpty.MatchString(line) {
+			break // parsing is finished
+		}
+
+		// line analysis
+		if rxEmpty.MatchString(line) {
 			continue
-		} else if rxDataBlockEnd.MatchString(line) {
-			lastDataLine = ctx.lineNum
-			break
+		} else if rxSyncBlockBegin.MatchString(line) {
+			record, err := ctx.parseSyncBlock()
+			if err != nil {
+				return nil, fmt.Errorf("Error parsing sync block at line %d, error: %w", ctx.lineNum, err)
+			}
+			result.SyncBlocks = append(result.SyncBlocks, record)
 		} else if rxCommentLine.MatchString(line) {
-			continue
+			continue // skip comments
 		} else {
-			ip, err := ctx.parseIpLine()
+			record, err := ctx.parseIpLine()
 			if err != nil {
 				if ctx.mode != Strict {
-					log.Warnf("Error parsing sync content line of hosts file, line: %d, error: %s", ctx.lineNum, err)
+					log.Warnf("Error parsing content line of hosts file, line: %d, error: %s", ctx.lineNum, err)
 					continue
 				}
-				return nil, fmt.Errorf("Error parsing sync content line (IPs) of hosts file, line: %d, error: %w", ctx.lineNum, err)
+				return nil, fmt.Errorf("Error parsing content line (IPs) of hosts file, line: %d, error: %w", ctx.lineNum, err)
 			}
-			record.IPRecords = append(record.IPRecords, ip)
-			// this may lead to file corruption if ctx.Mode != strict was used to parse file
-			// and then the data was used for updating the hosts file
-			lastDataLine = ctx.lineNum
+			result.IPRecords = append(result.IPRecords, record)
 		}
 	}
 
-	record.PosEndData = Position{Line: lastDataLine}
-	return &record, nil
+	result.ContentHash = ctx.hasher.Sum(nil)
+	return result, nil
 }
 
 func (ctx *hostsParseContext) parseSyncBlock() (*SyncBlock, error) {
@@ -355,59 +262,151 @@ func (ctx *hostsParseContext) parseSyncBlock() (*SyncBlock, error) {
 	record.PosEndHeader = Position{Line: lastHeadLine}
 	return &record, nil
 }
-
-func newHostsParseContext(r io.Reader, parseMode ParseMode) *hostsParseContext {
-	hasher := sha1.New()
-	rr := io.TeeReader(r, hasher)
-	scanner := bufio.NewScanner(rr)
-	result := HostsFileContent{}
-	parser := hostsParseContext{
-		scanner: *scanner,
-		target:  &result,
-		hasher:  hasher,
-		mode:    parseMode,
+func (ctx *hostsParseContext) parseDataBlock() (*SyncDataBlock, error) {
+	line, ok := ctx.currentLine()
+	if !ok {
+		panic("should never be called in this state")
 	}
 
-	return &parser
-}
+	if !rxDataBlockBegin.MatchString(line) {
+		return nil, fmt.Errorf("Line %d is not a start sync line", ctx.lineNum)
+	}
 
-func (ctx *hostsParseContext) parse() (*HostsFileContent, error) {
-
-	result := ctx.target
+	lastDataLine := ctx.lineNum
+	record := SyncDataBlock{
+		Pos: Position{Line: ctx.lineNum},
+	}
 
 	for {
-		line, ok := ctx.readLine()
-		if !ok {
-			if err := ctx.error(); err != nil {
-				return nil, err
-			}
-			break // parsing is finished
-		}
+		line, ok = ctx.readLine()
 
-		// line analysis
-		if rxEmpty.MatchString(line) {
-			continue
-		} else if rxSyncBlockBegin.MatchString(line) {
-			record, err := ctx.parseSyncBlock()
-			if err != nil {
-				return nil, fmt.Errorf("Error parsing sync block at line %d, error: %w", ctx.lineNum, err)
+		if !ok {
+			log.Warnf("Incomplete data sync block, line: %d", ctx.lineNum)
+			if ctx.mode != Safe {
+				return nil, fmt.Errorf("Incomplete data sync block, line: %d", ctx.lineNum)
 			}
-			result.SyncBlocks = append(result.SyncBlocks, record)
+			break
+		} else if rxEmpty.MatchString(line) {
+			continue
+		} else if rxDataBlockEnd.MatchString(line) {
+			lastDataLine = ctx.lineNum
+			break
 		} else if rxCommentLine.MatchString(line) {
-			continue // skip comments
+			continue
 		} else {
-			record, err := ctx.parseIpLine()
+			ip, err := ctx.parseIpLine()
 			if err != nil {
 				if ctx.mode != Strict {
-					log.Warnf("Error parsing content line of hosts file, line: %d, error: %s", ctx.lineNum, err)
+					log.Warnf("Error parsing sync content line of hosts file, line: %d, error: %s", ctx.lineNum, err)
 					continue
 				}
-				return nil, fmt.Errorf("Error parsing content line (IPs) of hosts file, line: %d, error: %w", ctx.lineNum, err)
+				return nil, fmt.Errorf("Error parsing sync content line (IPs) of hosts file, line: %d, error: %w", ctx.lineNum, err)
 			}
-			result.IPRecords = append(result.IPRecords, record)
+			record.IPRecords = append(record.IPRecords, ip)
+			// this may lead to file corruption if ctx.Mode != strict was used to parse file
+			// and then the data was used for updating the hosts file
+			lastDataLine = ctx.lineNum
 		}
 	}
 
-	result.ContentHash = ctx.hasher.Sum(nil)
-	return result, nil
+	record.PosEndData = Position{Line: lastDataLine}
+	return &record, nil
+}
+
+func (ctx *hostsParseContext) parseIpLine() (*IPRecord, error) {
+	line, ok := ctx.currentLine()
+	if !ok {
+		panic("should never be called in this state")
+	}
+
+	parts := strings.Fields(line)
+	if len(parts) < 2 || !rxIpAddress.MatchString(parts[0]) {
+		return nil, fmt.Errorf("wrong format of line which starts as IP alias line, line: %d", ctx.lineNum)
+	}
+
+	record := IPRecord{
+		Pos: Position{
+			Line: ctx.lineNum,
+		},
+		IP: parts[0],
+	}
+
+	aliases := parts[1:]
+
+	for _, val := range aliases {
+		if strings.HasPrefix(val, "#") {
+			break
+		}
+		record.Aliases = append(record.Aliases, val)
+	}
+
+	if len(record.Aliases) == 0 {
+		return nil, fmt.Errorf("wrong format of line which starts as IP alias line, line: %d", ctx.lineNum)
+	}
+
+	return &record, nil
+}
+
+func (ctx *hostsParseContext) parseInlineProps(trimmedLine string) []*InlineProperty {
+	var result []*InlineProperty
+
+	if !rxSingleLinePropsCheck.MatchString(trimmedLine) {
+		return nil
+	}
+
+	syncProps := rxSingleLineProps.FindAllStringSubmatch(trimmedLine, -1)
+	for _, match := range syncProps {
+		prop := InlineProperty{
+			Pos: Position{
+				Line: ctx.lineNum,
+			},
+			Name:  match[1],
+			Value: strings.TrimSuffix(match[2], ","),
+		}
+		result = append(result, &prop)
+	}
+	return result
+}
+
+func (ctx *hostsParseContext) readLine() (string, bool) {
+	if ctx.lineReturned {
+		ctx.lineReturned = false
+		ctx.lineNum++
+		return ctx.curLine, true
+	}
+
+	if ctx.scanner.Scan() {
+		ctx.curLine = ctx.scanner.Text()
+		ctx.lineNum++
+		return ctx.curLine, true
+	}
+
+	ctx.curLine = ""
+
+	return "", false
+}
+
+func (ctx *hostsParseContext) currentLine() (string, bool) {
+	if ctx.lineReturned {
+		panic("this method should never be called with such a state")
+	}
+	return ctx.curLine, true
+}
+
+func (ctx *hostsParseContext) returnLine() {
+	if ctx.lineReturned {
+		panic("this method should never be called with such a state")
+	}
+	ctx.lineReturned = true
+	ctx.lineNum--
+}
+
+func (ctx *hostsParseContext) error() error {
+	return ctx.scanner.Err()
+}
+
+func trimPrefixRegex(src string, rx *regexp.Regexp) string {
+	prefix := rx.FindString(src)
+	rest := strings.TrimPrefix(src, prefix)
+	return rest
 }

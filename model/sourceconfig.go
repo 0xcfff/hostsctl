@@ -2,6 +2,8 @@ package model
 
 import (
 	"crypto/sha1"
+
+	"golang.org/x/exp/maps"
 )
 
 const (
@@ -21,7 +23,7 @@ type SourceConfig interface {
 	// returns value of one single source configuration property
 	Property(name string) (value string, ok bool)
 
-	// return all known properties
+	// return requested properties or all properties if nil is specified
 	Properties(names []string) map[string]string
 
 	// method calculates hash based on the source configuration
@@ -39,6 +41,10 @@ func (s *sourceConfig) Property(name string) (value string, ok bool) {
 }
 
 func (s *sourceConfig) Properties(names []string) map[string]string {
+	if names == nil {
+		return maps.Clone(s.properties)
+	}
+
 	res := make(map[string]string, len(names))
 	for _, k := range names {
 		val, ok := s.properties[k]
@@ -46,6 +52,7 @@ func (s *sourceConfig) Properties(names []string) map[string]string {
 			res[k] = val
 		}
 	}
+
 	return res
 }
 
