@@ -10,8 +10,6 @@ import (
 	"strings"
 
 	"github.com/0xcfff/dnssync/model"
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,58 +31,41 @@ type Position struct {
 type IPRecord struct {
 	Pos Position
 
-	IP      string   `@Ip`
-	Aliases []string `@Token ( @Token )*`
+	IP      string
+	Aliases []string
 }
 
 type InlineProperty struct {
 	Pos Position
 
-	Name  string `@Ident`
-	Value string `@Token` //`( @String | @Token ) (",")?`
+	Name  string
+	Value string
 }
 
-type ConfigBlock struct {
+type SyncBlock struct {
 	Pos Position
 
-	Text        string            `"#" "@sync" ("source" "=")? (@String | @Token)`
-	InlineProps []*InlineProperty `@@*`
+	Text        string
+	InlineProps []*InlineProperty
 
-	Data *DataBlock
+	PosEndHeader Position
+
+	Data *SyncDataBlock
 }
 
-type DataBlock struct {
+type SyncDataBlock struct {
 	Pos Position
 
 	IPRecords []*IPRecord
 }
 
 type HostsFileContent struct {
-	Pos lexer.Position
-
-	IPRecords   []*IPRecord    `@@*`
-	SyncBlocks  []*ConfigBlock `@@*`
-	contentHash []byte
+	IPRecords   []*IPRecord
+	SyncBlocks  []*SyncBlock
+	ContentHash []byte
 }
 
 var (
-	def = lexer.MustSimple([]lexer.SimpleRule{
-		rule("Ip", `(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|([\da-fA-F]{0,}:[\da-fA-F]{0,}:[\da-fA-F]{0,}(:[\da-fA-F]{0,}){0,5})`),
-		rule("Token", `\S+`),
-		rule("NonStopText", `\S+`),
-		rule("Number", `\d+`),
-		rule("Ident", `[A-Za-z][\w\d]*`),
-		rule("String", `"[^"]*"`),
-		rule("Whitespace", `\s+`),
-		rule("Punct", `[,.<>(){}=:]`),
-		rule("Comment", `//.*`),
-	})
-	HostsParser = participle.MustBuild[HostsFileContent](
-		participle.Lexer(def),
-		participle.Unquote("String"),
-		participle.Elide("Whitespace"),
-	)
-
 	rxSyncBlockBegin = regexp.MustCompile(`^\s*#\s+@sync\s+`)
 	rxSyncBlockProps = regexp.MustCompile(`^\s*#\s+@(params?|props?)\s+`)
 	rxSyncBlockLine  = regexp.MustCompile(`^\s*#\s+@`)
@@ -97,13 +78,6 @@ var (
 	rxSingleLineProps      = regexp.MustCompile(`\s*(\w[\w\d]+)\s*=\s*(\S+)\s*,?`)
 	rxSingleLinePropsCheck = regexp.MustCompile(`^(\s*(\w[\w\d]+)\s*=\s*(\S+)\s*,?)+$`)
 )
-
-func rule(name, pattern string) lexer.SimpleRule {
-	return lexer.SimpleRule{
-		Name:    name,
-		Pattern: pattern,
-	}
-}
 
 type hostsParseContext struct {
 	scanner      bufio.Scanner
@@ -214,7 +188,7 @@ func (ctx *hostsParseContext) parseInlineProps(trimmedLine string) []*InlineProp
 	return result
 }
 
-func (ctx *hostsParseContext) parseDataBlock() (*DataBlock, error) {
+func (ctx *hostsParseContext) parseDataBlock() (*SyncDataBlock, error) {
 	line, ok := ctx.currentLine()
 	if !ok {
 		panic("should never be called in this state")
@@ -224,7 +198,7 @@ func (ctx *hostsParseContext) parseDataBlock() (*DataBlock, error) {
 		return nil, fmt.Errorf("Line %d is not a start sync line", ctx.lineNum)
 	}
 
-	record := DataBlock{
+	record := SyncDataBlock{
 		Pos: Position{Line: ctx.lineNum},
 	}
 
@@ -258,7 +232,7 @@ func (ctx *hostsParseContext) parseDataBlock() (*DataBlock, error) {
 	return &record, nil
 }
 
-func (ctx *hostsParseContext) parseSyncBlock() (*ConfigBlock, error) {
+func (ctx *hostsParseContext) parseSyncBlock() (*SyncBlock, error) {
 	line, ok := ctx.currentLine()
 	if !ok {
 		panic("should never be called in this state")
@@ -274,7 +248,8 @@ func (ctx *hostsParseContext) parseSyncBlock() (*ConfigBlock, error) {
 		return nil, fmt.Errorf("Line %d is not a start sync line (malformed)", ctx.lineNum)
 	}
 
-	record := ConfigBlock{
+	lastHeadLine := ctx.lineNum
+	record := SyncBlock{
 		Pos: Position{
 			Line: ctx.lineNum,
 		},
@@ -332,6 +307,7 @@ func (ctx *hostsParseContext) parseSyncBlock() (*ConfigBlock, error) {
 			} else {
 				record.InlineProps = append(record.InlineProps, props...)
 			}
+			lastHeadLine = ctx.lineNum
 		} else if rxSyncBlockLine.MatchString(line) {
 			rest = trimPrefixRegex(line, rxSyncBlockLine)
 			parts := strings.SplitN(rest, " ", 2) //todo: this needs to be replaced with more advanced implementation which takes into accout tabs
@@ -350,6 +326,7 @@ func (ctx *hostsParseContext) parseSyncBlock() (*ConfigBlock, error) {
 				}
 				record.InlineProps = append(record.InlineProps, &prop)
 			}
+			lastHeadLine = ctx.lineNum
 		} else {
 			ctx.returnLine()
 			break
@@ -357,6 +334,7 @@ func (ctx *hostsParseContext) parseSyncBlock() (*ConfigBlock, error) {
 
 	}
 
+	record.PosEndHeader = Position{Line: lastHeadLine}
 	return &record, nil
 }
 
@@ -411,7 +389,7 @@ func (ctx *hostsParseContext) parse() (*HostsFileContent, error) {
 		}
 	}
 
-	result.contentHash = ctx.hasher.Sum(nil)
+	result.ContentHash = ctx.hasher.Sum(nil)
 	return result, nil
 }
 

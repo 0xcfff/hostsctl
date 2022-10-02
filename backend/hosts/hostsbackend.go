@@ -79,7 +79,7 @@ func NewBackend(hostsFilePath string, fs afero.Fs) model.Backend {
 
 func convertToBackendFormat(parsedContent *HostsFileContent) *model.BackendState {
 	state := model.BackendState{
-		ContentHash: parsedContent.contentHash,
+		ContentHash: parsedContent.ContentHash,
 	}
 
 	for _, sourceSync := range parsedContent.SyncBlocks {
@@ -100,7 +100,7 @@ func convertToBackendFormat(parsedContent *HostsFileContent) *model.BackendState
 }
 
 type sourceStateWrapper struct {
-	sourceBlock *ConfigBlock
+	sourceBlock *SyncBlock
 }
 
 func (w *sourceStateWrapper) DataHash() []byte {

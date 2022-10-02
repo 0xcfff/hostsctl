@@ -82,13 +82,13 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		actual, err := ParseHostsFile(r)
 
 		// hack
-		expected.contentHash = actual.contentHash
+		expected.ContentHash = actual.ContentHash
 
 		// assert
 		assert.NoError(t, err, "parsing should be successful")
 		assert.NotNil(t, actual, "parse should return if not error")
 		assert.Equal(t, expected, actual)
-		assert.NotEmpty(t, actual.contentHash)
+		assert.NotEmpty(t, actual.ContentHash)
 	})
 	t.Run("IPv6Only", func(t *testing.T) {
 		// arrange
@@ -122,20 +122,20 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		actual, err := ParseHostsFile(r)
 
 		// hack
-		expected.contentHash = actual.contentHash
+		expected.ContentHash = actual.ContentHash
 
 		// assert
 		assert.NoError(t, err, "parsing should be successful")
 		assert.NotNil(t, actual, "parse should return if not error")
 		assert.Equal(t, expected, actual)
-		assert.NotEmpty(t, actual.contentHash)
+		assert.NotEmpty(t, actual.ContentHash)
 	})
 	t.Run("sync minimal", func(t *testing.T) {
 		// arrange
 		rawContent := `# @sync http://192.168.64.1:9053/dns?src=ingress,lb`
 
 		expected := &HostsFileContent{
-			SyncBlocks: []*ConfigBlock{
+			SyncBlocks: []*SyncBlock{
 				{
 					Pos: Position{Line: 1},
 					InlineProps: []*InlineProperty{
@@ -145,6 +145,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 							Value: "http://192.168.64.1:9053/dns?src=ingress,lb",
 						},
 					},
+					PosEndHeader: Position{Line: 1},
 				},
 			},
 		}
@@ -154,20 +155,20 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		actual, err := ParseHostsFile(r)
 
 		// hack
-		expected.contentHash = actual.contentHash
+		expected.ContentHash = actual.ContentHash
 
 		// assert
 		assert.NoError(t, err, "parsing should be successful")
 		assert.NotNil(t, actual, "parse should return if not error")
 		assert.Equal(t, expected, actual)
-		assert.NotEmpty(t, actual.contentHash)
+		assert.NotEmpty(t, actual.ContentHash)
 	})
 	t.Run("sync onelineprop", func(t *testing.T) {
 		// arrange
 		rawContent := `# @sync source=http://192.168.100.2/dns-records?domain=.sync-ops.com&domain=.sync-svc.com, unsafe=true, interval=auto`
 
 		expected := &HostsFileContent{
-			SyncBlocks: []*ConfigBlock{
+			SyncBlocks: []*SyncBlock{
 				{
 					Pos: Position{Line: 1},
 					InlineProps: []*InlineProperty{
@@ -187,6 +188,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 							Value: "auto",
 						},
 					},
+					PosEndHeader: Position{Line: 1},
 				},
 			},
 		}
@@ -196,13 +198,13 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		actual, err := ParseHostsFile(r)
 
 		// hack
-		expected.contentHash = actual.contentHash
+		expected.ContentHash = actual.ContentHash
 
 		// assert
 		assert.NoError(t, err, "parsing should be successful")
 		assert.NotNil(t, actual, "parse should return if not error")
 		assert.Equal(t, expected, actual)
-		assert.NotEmpty(t, actual.contentHash)
+		assert.NotEmpty(t, actual.ContentHash)
 	})
 	t.Run("sync multiline", func(t *testing.T) {
 		// arrange
@@ -212,7 +214,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		# @interval auto`
 
 		expected := &HostsFileContent{
-			SyncBlocks: []*ConfigBlock{
+			SyncBlocks: []*SyncBlock{
 				{
 					Pos: Position{Line: 2},
 					InlineProps: []*InlineProperty{
@@ -232,6 +234,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 							Value: "auto",
 						},
 					},
+					PosEndHeader: Position{Line: 4},
 				},
 			},
 		}
@@ -241,13 +244,13 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		actual, err := ParseHostsFile(r)
 
 		// hack
-		expected.contentHash = actual.contentHash
+		expected.ContentHash = actual.ContentHash
 
 		// assert
 		assert.NoError(t, err, "parsing should be successful")
 		assert.NotNil(t, actual, "parse should return if not error")
 		assert.Equal(t, expected, actual)
-		assert.NotEmpty(t, actual.contentHash)
+		assert.NotEmpty(t, actual.ContentHash)
 	})
 	t.Run("sync mixed", func(t *testing.T) {
 		// arrange
@@ -257,7 +260,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 					   # @kubeargs -v -d -c`
 
 		expected := &HostsFileContent{
-			SyncBlocks: []*ConfigBlock{
+			SyncBlocks: []*SyncBlock{
 				{
 					Pos: Position{Line: 1},
 					InlineProps: []*InlineProperty{
@@ -287,6 +290,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 							Value: "-v -d -c",
 						},
 					},
+					PosEndHeader: Position{Line: 4},
 				},
 			},
 		}
@@ -296,13 +300,13 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		actual, err := ParseHostsFile(r)
 
 		// hack
-		expected.contentHash = actual.contentHash
+		expected.ContentHash = actual.ContentHash
 
 		// assert
 		assert.NoError(t, err, "parsing should be successful")
 		assert.NotNil(t, actual, "parse should return if not error")
 		assert.Equal(t, expected, actual)
-		assert.NotEmpty(t, actual.contentHash)
+		assert.NotEmpty(t, actual.ContentHash)
 	})
 	t.Run("sync full", func(t *testing.T) {
 		// arrange
@@ -354,7 +358,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 					Aliases: []string{"box03", "box04"},
 				},
 			},
-			SyncBlocks: []*ConfigBlock{
+			SyncBlocks: []*SyncBlock{
 				{
 					Pos: Position{Line: 8},
 					InlineProps: []*InlineProperty{
@@ -374,6 +378,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 							Value: "auto",
 						},
 					},
+					PosEndHeader: Position{Line: 9},
 				},
 				{
 					Pos: Position{Line: 11},
@@ -394,7 +399,8 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 							Value: "5s",
 						},
 					},
-					Data: &DataBlock{
+					PosEndHeader: Position{Line: 12},
+					Data: &SyncDataBlock{
 						Pos: Position{Line: 13},
 						IPRecords: []*IPRecord{
 							{
@@ -418,13 +424,13 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		actual, err := ParseHostsFile(r)
 
 		// hack
-		expected.contentHash = actual.contentHash
+		expected.ContentHash = actual.ContentHash
 
 		// assert
 		assert.NoError(t, err, "parsing should be successful")
 		assert.NotNil(t, actual, "parse should return if not error")
 		assert.Equal(t, expected, actual)
-		assert.NotEmpty(t, actual.contentHash)
+		assert.NotEmpty(t, actual.ContentHash)
 	})
 }
 
