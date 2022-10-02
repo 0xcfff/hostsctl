@@ -26,7 +26,7 @@ func Test_HostsParser_DSLCanParseSamples(t *testing.T) {
 				defer f.Close()
 
 				// data, err := HostsParser.Parse(tclocal.Name(), f)
-				data, err := ParseHostsFile(f, Strict)
+				data, err := ParseHostsFileWithSources(f, Strict)
 
 				if err != nil {
 					t.Errorf("Error parsing '%s', %s ", tclocal.Name(), err)
@@ -48,7 +48,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 
 		// act
 		r := strings.NewReader(rawContent)
-		data, err := ParseHostsFile(r, Strict)
+		data, err := ParseHostsFileWithSources(r, Strict)
 
 		// assert
 		assert.NoError(t, err, "Error parsing content")
@@ -60,7 +60,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 		// arrange
 		rawContent := `
 		127.0.0.1	localhost
-		127.0.1.1	box01 box02`
+		127.0.1.1	box01 box02 # local dev`
 
 		expected := &HostsFileContent{
 			IPRecords: []*IPRecord{
@@ -73,13 +73,14 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 					Pos:     Position{Line: 3},
 					IP:      "127.0.1.1",
 					Aliases: []string{"box01", "box02"},
+					Notes:   "local dev",
 				},
 			},
 		}
 
 		// act
 		r := strings.NewReader(rawContent)
-		actual, err := ParseHostsFile(r, Strict)
+		actual, err := ParseHostsFileWithSources(r, Strict)
 
 		// hack
 		expected.ContentHash = actual.ContentHash
@@ -119,7 +120,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 
 		// act
 		r := strings.NewReader(rawContent)
-		actual, err := ParseHostsFile(r, Strict)
+		actual, err := ParseHostsFileWithSources(r, Strict)
 
 		// hack
 		expected.ContentHash = actual.ContentHash
@@ -152,7 +153,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 
 		// act
 		r := strings.NewReader(rawContent)
-		actual, err := ParseHostsFile(r, Strict)
+		actual, err := ParseHostsFileWithSources(r, Strict)
 
 		// hack
 		expected.ContentHash = actual.ContentHash
@@ -195,7 +196,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 
 		// act
 		r := strings.NewReader(rawContent)
-		actual, err := ParseHostsFile(r, Strict)
+		actual, err := ParseHostsFileWithSources(r, Strict)
 
 		// hack
 		expected.ContentHash = actual.ContentHash
@@ -241,7 +242,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 
 		// act
 		r := strings.NewReader(rawContent)
-		actual, err := ParseHostsFile(r, Strict)
+		actual, err := ParseHostsFileWithSources(r, Strict)
 
 		// hack
 		expected.ContentHash = actual.ContentHash
@@ -297,7 +298,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 
 		// act
 		r := strings.NewReader(rawContent)
-		actual, err := ParseHostsFile(r, Strict)
+		actual, err := ParseHostsFileWithSources(r, Strict)
 
 		// hack
 		expected.ContentHash = actual.ContentHash
@@ -422,7 +423,7 @@ func Test_ParseHostsFile_ParsesDataCorrectly(t *testing.T) {
 
 		// act
 		r := strings.NewReader(rawContent)
-		actual, err := ParseHostsFile(r, Strict)
+		actual, err := ParseHostsFileWithSources(r, Strict)
 
 		// hack
 		expected.ContentHash = actual.ContentHash
@@ -440,7 +441,7 @@ func Test_HostsPaster_DLSDebug(t *testing.T) {
 		// var reader = strings.NewReader("# @sync test")
 		var reader = strings.NewReader("# @sync source=test, interval=5s, target=next")
 		// var reader = strings.NewReader("192.168.1.1 alias1 alias2 # comment")
-		data, err := ParseHostsFile(reader, Strict)
+		data, err := ParseHostsFileWithSources(reader, Strict)
 
 		if err != nil {
 			t.Errorf("error parsing sample: %s", err)

@@ -3,14 +3,11 @@ package hosts
 import (
 	"crypto/sha1"
 	"fmt"
+	"os"
 	"runtime"
 
 	"github.com/0xcfff/dnspipe/model"
 	"github.com/spf13/afero"
-)
-
-const (
-	PathHostsFile = "/etc/hosts"
 )
 
 type hostsBackend struct {
@@ -33,7 +30,7 @@ func (backend *hostsBackend) ReadState() (*model.BackendState, error) {
 		return nil, fmt.Errorf("Error reading stats %w", err)
 	}
 
-	hostsContent, err := ParseHostsFile(file, Strict)
+	hostsContent, err := ParseHostsFileWithSources(file, Strict)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +60,7 @@ func NewBackend(hostsFilePath string, fs afero.Fs) model.Backend {
 
 	} else {
 		if hostsFilePath == "" {
-			backend.etcHostsPath = PathHostsFile
+			backend.etcHostsPath = EtcHostsPath()
 		} else {
 			backend.etcHostsPath = hostsFilePath
 		}
@@ -114,4 +111,12 @@ func (w *sourceStateWrapper) DataHash() []byte {
 	}
 
 	return hasher.Sum(nil)
+}
+
+func EtcHostsPath() string {
+	result := "/etc/hosts"
+	if runtime.GOOS == "windows" {
+		result = fmt.Sprintf("%s\\Drivers\\etc\\hosts", os.Getenv("SYSTEM32"))
+	}
+	return result
 }

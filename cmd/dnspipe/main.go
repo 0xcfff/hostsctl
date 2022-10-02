@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	hsts "github.com/0xcfff/dnspipe/command/hosts"
 	"github.com/0xcfff/dnspipe/command/version"
 	"github.com/spf13/cobra"
 )
@@ -31,4 +32,5 @@ func init() {
 	}
 
 	rootCmd.AddCommand(version.NewCmdVersion())
+	rootCmd.AddCommand(hsts.NewCmdHosts())
 }

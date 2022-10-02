@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"runtime"
 	"strings"
 
 	"github.com/0xcfff/dnspipe/model"
+	"github.com/spf13/afero"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
@@ -23,51 +25,88 @@ var (
 	singleLineProps = []string{"enabled", "interval"}
 )
 
+func NewHostsFile(path string, fs afero.Fs) (*HostsFile, error) {
+	if fs == nil {
+		fs = afero.NewOsFs()
+	}
+	if path == "" {
+		path = EtcHostsPath()
+	}
+	f, err := fs.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("Can't open hosts file %s, %w", path, err)
+	}
+	buff, err := io.ReadAll(f)
+	if err != nil {
+		return nil, fmt.Errorf("Can't read hosts file %s, %w", path, err)
+	}
+	hosts := &HostsFile{
+		content: buff,
+	}
+	return hosts, nil
+}
+
 func NewHostsFileFromContent(content []byte) *HostsFile {
 	return &HostsFile{
 		content: content,
 	}
 }
 
-func (f *HostsFile) Parse(mode ParseMode) (*HostsFileContent, error) {
-	return ParseHostsFile(bytes.NewReader(f.content), mode)
+func (f *HostsFile) Dump() {
+	s := string(f.content)
+	fmt.Println(s)
 }
 
-func (f *HostsFile) AddSource(source model.SourceConfig) error {
+func (f *HostsFile) Parse(mode ParseMode) (*HostsFileContent, error) {
+	return ParseHostsFileWithSources(bytes.NewReader(f.content), mode)
+}
+
+func (f *HostsFile) AppendSource(source model.SourceConfig) error {
 	b := &strings.Builder{}
-	s := bufio.NewScanner(bytes.NewReader(f.content))
-	lastLineEmpty := true
 
-	for {
-		ok := s.Scan()
-		if !ok {
-			break
-		}
-
-		line := s.Text()
-		lastLineEmpty = strings.TrimSpace(line) == ""
-
-		_, err := b.WriteString(line)
-		if err != nil {
-			return fmt.Errorf("Error writting config %w", err)
-		}
-		_, err = b.WriteString(newLine)
-		if err != nil {
-			return fmt.Errorf("Error writting config %w", err)
-		}
+	err := writeOriginalLines(b, f.content, true)
+	if err != nil {
+		return fmt.Errorf("Error writting original lines %w", err)
 	}
 
-	if !lastLineEmpty {
-		b.WriteString(newLine)
-	}
-
-	err := writeSourceConfig(b, source)
+	err = writeSourceConfig(b, source)
 	if err != nil {
 		return fmt.Errorf("Error writting source config %w", err)
 	}
 
 	f.content = []byte(b.String())
 
+	return nil
+}
+
+func (f *HostsFile) AppendIp(ip *IPRecord) error {
+	b := &strings.Builder{}
+
+	err := writeOriginalLines(b, f.content, false)
+	if err != nil {
+		return fmt.Errorf("Error writting original lines %w", err)
+	}
+
+	err = writeIpRecord(b, ip)
+	if err != nil {
+		return fmt.Errorf("Error writting ip %w", err)
+	}
+
+	f.content = []byte(b.String())
+
+	return nil
+}
+
+func writeIpRecord(b *strings.Builder, ip *IPRecord) error {
+	b.WriteString(ip.IP)
+	for _, v := range ip.Aliases {
+		b.WriteString(" ")
+		b.WriteString(v)
+	}
+	if ip.Notes != "" {
+		b.WriteString(" # ")
+		b.WriteString(ip.Notes)
+	}
 	return nil
 }
 
@@ -116,6 +155,35 @@ func writeSourceConfig(b *strings.Builder, source model.SourceConfig) error {
 				}
 			}
 		}
+	}
+	return nil
+}
+
+func writeOriginalLines(b *strings.Builder, content []byte, ensureNewLine bool) error {
+	s := bufio.NewScanner(bytes.NewReader(content))
+	lastLineEmpty := true
+
+	for {
+		ok := s.Scan()
+		if !ok {
+			break
+		}
+
+		line := s.Text()
+		lastLineEmpty = ensureNewLine && strings.TrimSpace(line) == ""
+
+		_, err := b.WriteString(line)
+		if err != nil {
+			return err
+		}
+		_, err = b.WriteString(newLine)
+		if err != nil {
+			return err
+		}
+	}
+
+	if !lastLineEmpty && ensureNewLine {
+		b.WriteString(newLine)
 	}
 	return nil
 }

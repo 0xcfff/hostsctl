@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHostsFile_AddSource(t *testing.T) {
+func TestHostsFile_AppendSource(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		orig := ``
 		expected := `# @sync kubectl://microk8s
@@ -19,7 +19,7 @@ func TestHostsFile_AddSource(t *testing.T) {
 
 		// act
 		f := NewHostsFileFromContent([]byte(orig))
-		err := f.AddSource(source)
+		err := f.AppendSource(source)
 
 		// assert
 		assert.NoError(t, err)
@@ -38,7 +38,7 @@ func TestHostsFile_AddSource(t *testing.T) {
 
 		// act
 		f := NewHostsFileFromContent([]byte(orig))
-		err := f.AddSource(source)
+		err := f.AppendSource(source)
 
 		// assert
 		assert.NoError(t, err)
@@ -62,7 +62,7 @@ func TestHostsFile_AddSource(t *testing.T) {
 
 		// act
 		f := NewHostsFileFromContent([]byte(orig))
-		err := f.AddSource(source)
+		err := f.AppendSource(source)
 
 		// assert
 		assert.NoError(t, err)

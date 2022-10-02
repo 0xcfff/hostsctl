@@ -33,6 +33,7 @@ type IPRecord struct {
 
 	IP      string
 	Aliases []string
+	Notes   string
 }
 
 type InlineProperty struct {
@@ -76,6 +77,7 @@ type hostsParseContext struct {
 	lineNum      int
 	lineReturned bool
 	position     int
+	parseSources bool
 }
 
 var (
@@ -95,22 +97,32 @@ var (
 // Parses passed file in /etc/hosts format
 // The fuction extracts list of IP <=> Domain Name mappings
 // as well as additional synchronization blocks descrioption
-func ParseHostsFile(r io.Reader, parseMode ParseMode) (*HostsFileContent, error) {
-	ctx := newHostsParseContext(r, parseMode)
+func ParseHostsFileWithSources(r io.Reader, parseMode ParseMode) (*HostsFileContent, error) {
+	ctx := newHostsParseContext(r, parseMode, true)
 	result, err := ctx.parse()
 	return result, err
 }
 
-func newHostsParseContext(r io.Reader, parseMode ParseMode) *hostsParseContext {
+// Parses passed file in /etc/hosts format
+// The fuction extracts list of IP <=> Domain Name mappings
+// this method does not parse synchronization blocks descrioption
+func ParseHostsFileWithoutSources(r io.Reader, parseMode ParseMode) (*HostsFileContent, error) {
+	ctx := newHostsParseContext(r, parseMode, false)
+	result, err := ctx.parse()
+	return result, err
+}
+
+func newHostsParseContext(r io.Reader, parseMode ParseMode, parseSources bool) *hostsParseContext {
 	hasher := sha1.New()
 	rr := io.TeeReader(r, hasher)
 	scanner := bufio.NewScanner(rr)
 	result := HostsFileContent{}
 	parser := hostsParseContext{
-		scanner: *scanner,
-		target:  &result,
-		hasher:  hasher,
-		mode:    parseMode,
+		scanner:      *scanner,
+		target:       &result,
+		hasher:       hasher,
+		mode:         parseMode,
+		parseSources: parseSources,
 	}
 
 	return &parser
@@ -132,7 +144,7 @@ func (ctx *hostsParseContext) parse() (*HostsFileContent, error) {
 		// line analysis
 		if rxEmpty.MatchString(line) {
 			continue
-		} else if rxSyncBlockBegin.MatchString(line) {
+		} else if ctx.parseSources && rxSyncBlockBegin.MatchString(line) {
 			record, err := ctx.parseSyncBlock()
 			if err != nil {
 				return nil, fmt.Errorf("Error parsing sync block at line %d, error: %w", ctx.lineNum, err)
@@ -335,6 +347,8 @@ func (ctx *hostsParseContext) parseIpLine() (*IPRecord, error) {
 
 	for _, val := range aliases {
 		if strings.HasPrefix(val, "#") {
+			idx := strings.Index(line, val)
+			record.Notes = strings.TrimSpace(line[idx+1:])
 			break
 		}
 		record.Aliases = append(record.Aliases, val)
