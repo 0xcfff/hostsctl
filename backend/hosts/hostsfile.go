@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/0xcfff/dnssync/model"
+	"github.com/0xcfff/dnspipe/model"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )

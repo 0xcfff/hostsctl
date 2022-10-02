@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/0xcfff/dnssync/command/version"
+	"github.com/0xcfff/dnspipe/command/version"
 	"github.com/spf13/cobra"
 )
 

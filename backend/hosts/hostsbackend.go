@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/0xcfff/dnssync/model"
+	"github.com/0xcfff/dnspipe/model"
 	"github.com/spf13/afero"
 )
 

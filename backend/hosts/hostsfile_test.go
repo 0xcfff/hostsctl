@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/0xcfff/dnssync/model"
+	"github.com/0xcfff/dnspipe/model"
 	"github.com/stretchr/testify/assert"
 )
 

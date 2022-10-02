@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/0xcfff/dnssync/model"
+	"github.com/0xcfff/dnspipe/model"
 	log "github.com/sirupsen/logrus"
 )
 
