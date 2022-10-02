@@ -57,12 +57,25 @@ type SyncDataBlock struct {
 	Pos Position
 
 	IPRecords []*IPRecord
+
+	PosEndData Position
 }
 
 type HostsFileContent struct {
 	IPRecords   []*IPRecord
 	SyncBlocks  []*SyncBlock
 	ContentHash []byte
+}
+
+type hostsParseContext struct {
+	scanner      bufio.Scanner
+	hasher       hash.Hash
+	mode         ParseMode
+	target       *HostsFileContent
+	curLine      string
+	lineNum      int
+	lineReturned bool
+	position     int
 }
 
 var (
@@ -79,15 +92,13 @@ var (
 	rxSingleLinePropsCheck = regexp.MustCompile(`^(\s*(\w[\w\d]+)\s*=\s*(\S+)\s*,?)+$`)
 )
 
-type hostsParseContext struct {
-	scanner      bufio.Scanner
-	hasher       hash.Hash
-	mode         ParseMode
-	target       *HostsFileContent
-	curLine      string
-	lineNum      int
-	lineReturned bool
-	position     int
+// Parses passed file in /etc/hosts format
+// The fuction extracts list of IP <=> Domain Name mappings
+// as well as additional synchronization blocks descrioption
+func ParseHostsFile(r io.Reader, parseMode ParseMode) (*HostsFileContent, error) {
+	ctx := newHostsParseContext(r, parseMode)
+	result, err := ctx.parse()
+	return result, err
 }
 
 func (ctx *hostsParseContext) readLine() (string, bool) {
@@ -198,6 +209,7 @@ func (ctx *hostsParseContext) parseDataBlock() (*SyncDataBlock, error) {
 		return nil, fmt.Errorf("Line %d is not a start sync line", ctx.lineNum)
 	}
 
+	lastDataLine := ctx.lineNum
 	record := SyncDataBlock{
 		Pos: Position{Line: ctx.lineNum},
 	}
@@ -214,6 +226,7 @@ func (ctx *hostsParseContext) parseDataBlock() (*SyncDataBlock, error) {
 		} else if rxEmpty.MatchString(line) {
 			continue
 		} else if rxDataBlockEnd.MatchString(line) {
+			lastDataLine = ctx.lineNum
 			break
 		} else if rxCommentLine.MatchString(line) {
 			continue
@@ -227,8 +240,13 @@ func (ctx *hostsParseContext) parseDataBlock() (*SyncDataBlock, error) {
 				return nil, fmt.Errorf("Error parsing sync content line (IPs) of hosts file, line: %d, error: %w", ctx.lineNum, err)
 			}
 			record.IPRecords = append(record.IPRecords, ip)
+			// this may lead to file corruption if ctx.Mode != strict was used to parse file
+			// and then the data was used for updating the hosts file
+			lastDataLine = ctx.lineNum
 		}
 	}
+
+	record.PosEndData = Position{Line: lastDataLine}
 	return &record, nil
 }
 
@@ -338,7 +356,7 @@ func (ctx *hostsParseContext) parseSyncBlock() (*SyncBlock, error) {
 	return &record, nil
 }
 
-func newHostsParseContext(r io.Reader) *hostsParseContext {
+func newHostsParseContext(r io.Reader, parseMode ParseMode) *hostsParseContext {
 	hasher := sha1.New()
 	rr := io.TeeReader(r, hasher)
 	scanner := bufio.NewScanner(rr)
@@ -347,6 +365,7 @@ func newHostsParseContext(r io.Reader) *hostsParseContext {
 		scanner: *scanner,
 		target:  &result,
 		hasher:  hasher,
+		mode:    parseMode,
 	}
 
 	return &parser
@@ -391,10 +410,4 @@ func (ctx *hostsParseContext) parse() (*HostsFileContent, error) {
 
 	result.ContentHash = ctx.hasher.Sum(nil)
 	return result, nil
-}
-
-func ParseHostsFile(r io.Reader) (*HostsFileContent, error) {
-	ctx := newHostsParseContext(r)
-	result, err := ctx.parse()
-	return result, err
 }
