@@ -49,6 +49,8 @@ dnspipe dns proxy
 dnspipe dns restore
 dnspipe serve [src] [tgt] [profile]
 
-
+##################
+TODO
+add ParseFlags to EtcHosts parsing logic
 
 
