@@ -29,3 +29,26 @@
 ## Parsers
 https://github.com/alecthomas/participle/blob/master/_examples/sql/main.go
 
+
+
+#####################################
+# cmdline
+
+dnspipe version
+dnspipe hosts source list
+dnspipe hosts source add
+dnspipe hosts source query
+dnspipe hosts ip list
+dnspipe hosts ip add
+dnspipe hosts sync --watch
+dnspipe source list
+dnspipe source add
+dnspipe source query
+dnspipe dns hijack
+dnspipe dns proxy
+dnspipe dns restore
+dnspipe serve [src] [tgt] [profile]
+
+
+
+
