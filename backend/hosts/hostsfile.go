@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/0xcfff/dnspipe/model"
-	"github.com/spf13/afero"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
@@ -25,28 +24,7 @@ var (
 	singleLineProps = []string{"enabled", "interval"}
 )
 
-func NewHostsFile(path string, fs afero.Fs) (*HostsFile, error) {
-	if fs == nil {
-		fs = afero.NewOsFs()
-	}
-	if path == "" {
-		path = EtcHostsPath()
-	}
-	f, err := fs.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("Can't open hosts file %s, %w", path, err)
-	}
-	buff, err := io.ReadAll(f)
-	if err != nil {
-		return nil, fmt.Errorf("Can't read hosts file %s, %w", path, err)
-	}
-	hosts := &HostsFile{
-		content: buff,
-	}
-	return hosts, nil
-}
-
-func NewHostsFileFromContent(content []byte) *HostsFile {
+func NewHostsFile(content []byte) *HostsFile {
 	return &HostsFile{
 		content: content,
 	}
@@ -55,6 +33,10 @@ func NewHostsFileFromContent(content []byte) *HostsFile {
 func (f *HostsFile) Dump() {
 	s := string(f.content)
 	fmt.Println(s)
+}
+
+func (f *HostsFile) Save(w io.Writer) (int, error) {
+	return w.Write(f.content)
 }
 
 func (f *HostsFile) Parse(mode ParseMode) (*HostsFileContent, error) {

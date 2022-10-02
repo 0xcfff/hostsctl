@@ -18,7 +18,7 @@ func TestHostsFile_AppendSource(t *testing.T) {
 		})
 
 		// act
-		f := NewHostsFileFromContent([]byte(orig))
+		f := NewHostsFile([]byte(orig))
 		err := f.AppendSource(source)
 
 		// assert
@@ -37,7 +37,7 @@ func TestHostsFile_AppendSource(t *testing.T) {
 		})
 
 		// act
-		f := NewHostsFileFromContent([]byte(orig))
+		f := NewHostsFile([]byte(orig))
 		err := f.AppendSource(source)
 
 		// assert
@@ -61,7 +61,7 @@ func TestHostsFile_AppendSource(t *testing.T) {
 		})
 
 		// act
-		f := NewHostsFileFromContent([]byte(orig))
+		f := NewHostsFile([]byte(orig))
 		err := f.AppendSource(source)
 
 		// assert

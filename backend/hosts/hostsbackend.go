@@ -3,21 +3,17 @@ package hosts
 import (
 	"crypto/sha1"
 	"fmt"
-	"os"
-	"runtime"
 
 	"github.com/0xcfff/dnspipe/model"
-	"github.com/spf13/afero"
 )
 
 type hostsBackend struct {
-	etcHostsPath string
-	fs           afero.Fs
+	src *HostsFileSource
 }
 
 func (backend *hostsBackend) ReadState() (*model.BackendState, error) {
 
-	file, err := backend.fs.Open(backend.etcHostsPath)
+	file, err := backend.src.openRead()
 	if err != nil {
 		return nil, fmt.Errorf("Error opening file %w", err)
 	}
@@ -45,32 +41,15 @@ func (backend *hostsBackend) UpdateState(changeSet model.BackendStateChangeSet) 
 	return &model.BackendState{}, nil
 }
 
-func DefaultBackend() model.Backend {
-	return NewBackend("", nil)
-}
+func NewBackend(src *HostsFileSource) model.Backend {
 
-func NewBackend(hostsFilePath string, fs afero.Fs) model.Backend {
-
-	backend := hostsBackend{}
-
-	osName := runtime.GOOS
-
-	if osName == "windows" {
-		panic("not implemented")
-
-	} else {
-		if hostsFilePath == "" {
-			backend.etcHostsPath = EtcHostsPath()
-		} else {
-			backend.etcHostsPath = hostsFilePath
-		}
-
-		backend.fs = fs
-		if backend.fs == nil {
-			backend.fs = afero.NewOsFs()
-		}
+	if src == nil {
+		src = NewHostsFileSource("", nil)
 	}
 
+	backend := hostsBackend{
+		src: src,
+	}
 	return &backend
 }
 
@@ -111,12 +90,4 @@ func (w *sourceStateWrapper) DataHash() []byte {
 	}
 
 	return hasher.Sum(nil)
-}
-
-func EtcHostsPath() string {
-	result := "/etc/hosts"
-	if runtime.GOOS == "windows" {
-		result = fmt.Sprintf("%s\\Drivers\\etc\\hosts", os.Getenv("SYSTEM32"))
-	}
-	return result
 }
