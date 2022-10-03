@@ -16,7 +16,8 @@ func NewCmdIpAdd() *cobra.Command {
 				IP:      args[0],
 				Aliases: args[1:],
 			}
-			f, err := hosts.NewHostsFile("", nil)
+			fs := hosts.NewHostsFileSource("", nil)
+			f, err := fs.LoadFile()
 			cobra.CheckErr(err)
 
 			f.AppendIp(ip)
