@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	hsts "github.com/0xcfff/dnspipe/command/hosts"
-	"github.com/0xcfff/dnspipe/command/version"
+	hsts "github.com/0xcfff/dnspipe/commands/hosts"
+	"github.com/0xcfff/dnspipe/commands/version"
 	"github.com/spf13/cobra"
 )
 

@@ -56,7 +56,7 @@ func (s *HostsFileSource) LoadFile() (*HostsFile, error) {
 	return hostsFile, nil
 }
 
-func (f *HostsFileSource) LoadAndParse(mode ParseMode) (*HostsFileContent, error) {
+func (f *HostsFileSource) LoadAndParse(mode ParseMode, flags ParseFlags) (*HostsFileContent, error) {
 	r, err := f.openRead()
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (f *HostsFileSource) LoadAndParse(mode ParseMode) (*HostsFileContent, error
 
 	defer r.Close()
 
-	return ParseHostsFileWithSources(r, mode)
+	return ParseHostsFile(r, mode, flags)
 }
 
 func EtcHostsPath() string {

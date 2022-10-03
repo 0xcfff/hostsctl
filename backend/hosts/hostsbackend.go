@@ -26,7 +26,7 @@ func (backend *hostsBackend) ReadState() (*model.BackendState, error) {
 		return nil, fmt.Errorf("Error reading stats %w", err)
 	}
 
-	hostsContent, err := ParseHostsFileWithSources(file, Strict)
+	hostsContent, err := ParseHostsFile(file, Strict, ParseAll)
 	if err != nil {
 		return nil, err
 	}

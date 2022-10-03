@@ -39,8 +39,8 @@ func (f *HostsFile) Save(w io.Writer) (int, error) {
 	return w.Write(f.content)
 }
 
-func (f *HostsFile) Parse(mode ParseMode) (*HostsFileContent, error) {
-	return ParseHostsFileWithSources(bytes.NewReader(f.content), mode)
+func (f *HostsFile) Parse(mode ParseMode, flags ParseFlags) (*HostsFileContent, error) {
+	return ParseHostsFile(bytes.NewReader(f.content), mode, flags)
 }
 
 func (f *HostsFile) AppendSource(source model.SourceConfig) error {

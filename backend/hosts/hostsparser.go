@@ -15,6 +15,8 @@ import (
 
 type ParseMode int
 
+type ParseFlags int
+
 const (
 	// Any error in file leads to parsing failure
 	Strict ParseMode = iota
@@ -22,6 +24,13 @@ const (
 	Moderate
 	// Any errors which can be ignored are ignored
 	Safe
+)
+
+const (
+	None         ParseFlags = 0
+	ParseSources ParseFlags = 0x00000001 << 0
+
+	ParseAll = ParseSources
 )
 
 type Position struct {
@@ -96,23 +105,15 @@ var (
 
 // Parses passed file in /etc/hosts format
 // The fuction extracts list of IP <=> Domain Name mappings
-// as well as additional synchronization blocks descrioption
-func ParseHostsFileWithSources(r io.Reader, parseMode ParseMode) (*HostsFileContent, error) {
-	ctx := newHostsParseContext(r, parseMode, true)
+// as well as additional synchronization blocks descriptions
+// if requested by parseFlags
+func ParseHostsFile(r io.Reader, parseMode ParseMode, parseFlags ParseFlags) (*HostsFileContent, error) {
+	ctx := newHostsParseContext(r, parseMode, parseFlags)
 	result, err := ctx.parse()
 	return result, err
 }
 
-// Parses passed file in /etc/hosts format
-// The fuction extracts list of IP <=> Domain Name mappings
-// this method does not parse synchronization blocks descrioption
-func ParseHostsFileWithoutSources(r io.Reader, parseMode ParseMode) (*HostsFileContent, error) {
-	ctx := newHostsParseContext(r, parseMode, false)
-	result, err := ctx.parse()
-	return result, err
-}
-
-func newHostsParseContext(r io.Reader, parseMode ParseMode, parseSources bool) *hostsParseContext {
+func newHostsParseContext(r io.Reader, parseMode ParseMode, parseFlags ParseFlags) *hostsParseContext {
 	hasher := sha1.New()
 	rr := io.TeeReader(r, hasher)
 	scanner := bufio.NewScanner(rr)
@@ -122,7 +123,7 @@ func newHostsParseContext(r io.Reader, parseMode ParseMode, parseSources bool) *
 		target:       &result,
 		hasher:       hasher,
 		mode:         parseMode,
-		parseSources: parseSources,
+		parseSources: (parseFlags & ParseSources) == ParseSources,
 	}
 
 	return &parser
@@ -160,8 +161,9 @@ func (ctx *hostsParseContext) parse() (*HostsFileContent, error) {
 					continue
 				}
 				return nil, fmt.Errorf("Error parsing content line (IPs) of hosts file, line: %d, error: %w", ctx.lineNum, err)
+			} else {
+				result.IPRecords = append(result.IPRecords, record)
 			}
-			result.IPRecords = append(result.IPRecords, record)
 		}
 	}
 
