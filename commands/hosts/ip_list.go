@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/0xcfff/dnspipe/backend/hosts"
-	common "github.com/0xcfff/dnspipe/commands/cmdcommon"
+	"github.com/0xcfff/dnspipe/commands/common"
 	"github.com/0xcfff/dnspipe/printutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
