@@ -19,10 +19,17 @@ type outFormat int
 
 const (
 	fmtText  outFormat = iota
-	fmtFlat  outFormat = iota
 	fmtHosts outFormat = iota
 	fmtJson  outFormat = iota
 	fmtYaml  outFormat = iota
+)
+
+type outGrouping int
+
+const (
+	grpOrig    outGrouping = iota
+	grpUngroup outGrouping = iota
+	grpGroup   outGrouping = iota
 )
 
 var (
@@ -31,17 +38,25 @@ var (
 		common.TfmtText: fmtText,
 		common.TfmtJson: fmtJson,
 		common.TfmtYaml: fmtYaml,
-		"flat":          fmtFlat,
 		"hosts":         fmtHosts,
+	}
+
+	groupings = map[string]outGrouping{
+		"":        grpOrig,
+		"orig":    grpOrig,
+		"group":   grpGroup,
+		"ungrpup": grpUngroup,
 	}
 )
 
 type IpListOptions struct {
-	outputFormat string
-	output       outFormat
-	noHeaders    bool
-	noSource     bool
-	noComments   bool
+	outputFormat   string
+	output         outFormat
+	outputGrouping string
+	grouping       outGrouping
+	noHeaders      bool
+	noSource       bool
+	noComments     bool
 }
 
 func NewCmdIpList() *cobra.Command {
@@ -62,6 +77,7 @@ func NewCmdIpList() *cobra.Command {
 	cmd.Flags().BoolVar(&opt.noSource, "no-source", opt.noSource, "Do not show IP sources")
 	cmd.Flags().BoolVar(&opt.noComments, "no-comments", opt.noSource, "Do not show comments")
 	cmd.Flags().StringVarP(&opt.outputFormat, "output", "o", opt.outputFormat, fmt.Sprintf("Output format. One of %s", strings.Join(maps.Keys(formats), ",")))
+	cmd.Flags().StringVarP(&opt.outputGrouping, "grouping", "g", opt.outputFormat, fmt.Sprintf("IPs grouping. One of %s", strings.Join(maps.Keys(groupings), ",")))
 
 	return cmd
 }
@@ -90,7 +106,7 @@ func (opt *IpListOptions) Execute() error {
 	cobra.CheckErr(err)
 
 	err = printutil.PrintTabbed(os.Stdout, nil, 2, func(w io.Writer) error {
-		columns := []string{"IP", "HOSTNAME", "SOURCE", "NOTE"}
+		columns := []string{"IP", "HOSTNAME", "SOURCE", "COMMENT"}
 		fmt.Fprint(w, strings.Join(columns, "\t"))
 		fmt.Fprintln(w)
 
