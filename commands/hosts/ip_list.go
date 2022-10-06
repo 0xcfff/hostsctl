@@ -1,10 +1,10 @@
 package hosts
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/0xcfff/dnspipe/backend/hosts"
@@ -12,7 +12,7 @@ import (
 	"github.com/0xcfff/dnspipe/printutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
+	"gopkg.in/yaml.v3"
 )
 
 type outFormat int
@@ -24,14 +24,6 @@ const (
 	fmtYaml  outFormat = iota
 )
 
-type outGrouping int
-
-const (
-	grpOrig    outGrouping = iota
-	grpUngroup outGrouping = iota
-	grpGroup   outGrouping = iota
-)
-
 var (
 	formats = map[string]outFormat{
 		"":              fmtText,
@@ -41,11 +33,11 @@ var (
 		"hosts":         fmtHosts,
 	}
 
-	groupings = map[string]outGrouping{
-		"":        grpOrig,
-		"orig":    grpOrig,
-		"group":   grpGroup,
-		"ungrpup": grpUngroup,
+	groupings = map[string]IPGrouping{
+		"":        GrpOriginal,
+		"orig":    GrpOriginal,
+		"group":   GrpGroup,
+		"ungroup": GrpUngroup,
 	}
 )
 
@@ -53,7 +45,7 @@ type IpListOptions struct {
 	outputFormat   string
 	output         outFormat
 	outputGrouping string
-	grouping       outGrouping
+	grouping       IPGrouping
 	noHeaders      bool
 	noSource       bool
 	noComments     bool
@@ -90,6 +82,11 @@ func (opt *IpListOptions) Complete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("--output %v of list command does not support specified output format", opt.outputFormat)
 	}
 
+	opt.grouping, ok = groupings[opt.outputGrouping]
+	if !ok {
+		return fmt.Errorf("--grouping %v of list command does not support specified value", opt.outputGrouping)
+	}
+
 	return nil
 }
 
@@ -105,102 +102,76 @@ func (opt *IpListOptions) Execute() error {
 	c, err := fs.LoadAndParse(hosts.Strict, hosts.None)
 	cobra.CheckErr(err)
 
-	err = printutil.PrintTabbed(os.Stdout, nil, 2, func(w io.Writer) error {
-		columns := []string{"IP", "HOSTNAME", "SOURCE", "COMMENT"}
-		fmt.Fprint(w, strings.Join(columns, "\t"))
-		fmt.Fprintln(w)
-
-		allIps := slices.Clone(c.IPRecords)
-		sort.Slice(allIps, func(i, j int) bool { return allIps[i].IP < allIps[j].IP })
-
-		for _, ip := range c.IPRecords {
-			aliases := slices.Clone(ip.Aliases)
-			sort.Strings(aliases)
-
-			for _, al := range aliases {
-				values := []string{ip.IP, al, ip.Notes}
-				fmt.Fprint(w, strings.Join(values, "\t"))
-				fmt.Fprintln(w)
-			}
-		}
-
-		return nil
-	})
+	switch opt.output {
+	case fmtText:
+		err = writeDataAsText(opt, c)
+	case fmtJson:
+		err = writeDataAsJson(opt, c)
+	case fmtYaml:
+		err = writeDataAsYaml(opt, c)
+	default:
+		panic("unknown output format")
+	}
 	cobra.CheckErr(err)
 
 	return nil
 
-	// w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
+}
 
-	// b := strings.Builder{}
-	// w.Write([]byte("IP\tHostname\tAliases\tNotes\n"))
-	// for _, ip := range c.IPRecords {
-	// 	b.Reset()
-	// 	b.WriteString(ip.IP)
-	// 	b.WriteRune('\t')
-	// 	if len(ip.Aliases) > 0 {
-	// 		b.WriteString(ip.Aliases[0])
-	// 	}
-	// 	b.WriteRune('\t')
-	// 	if len(ip.Aliases) > 1 {
-	// 		a := ip.Aliases[1:]
-	// 		first := true
-	// 		for _, al := range a {
-	// 			if !first {
-	// 				b.WriteRune(' ')
-	// 			} else {
-	// 				first = false
-	// 			}
-	// 			b.WriteString(al)
-	// 		}
-	// 	}
-	// 	b.WriteRune('\t')
-	// 	if ip.Notes != "" {
-	// 		b.WriteString(ip.Notes)
-	// 	}
-	// 	b.WriteRune('\t')
-	// 	b.WriteRune('\n')
-	// 	w.Write([]byte(b.String()))
-	// }
+func writeDataAsText(opt *IpListOptions, data *hosts.HostsFileContent) error {
+	m := NewIPModels(data, opt.grouping)
 
-	// widths := w.RememberedWidths()
-	// w.Flush()
+	err := printutil.PrintTabbed(os.Stdout, nil, 2, func(w io.Writer) error {
 
-	// for _, src := range c.SyncBlocks {
-	// 	if src.Data != nil && len(src.Data.IPRecords) > 0 {
-	// 		fmt.Println("records from a sync source")
-	// 		w.SetRememberedWidths(widths)
+		if !opt.noHeaders {
+			columns := []string{"IP", "HOSTNAME", "SOURCE", "COMMENT"}
+			visible := getVisibleValues(opt, columns)
+			fmt.Fprint(w, strings.Join(visible, "\t"))
+			fmt.Fprintln(w)
+		}
 
-	// 		for _, ip := range src.Data.IPRecords {
-	// 			b.Reset()
-	// 			b.WriteString(ip.IP)
-	// 			b.WriteRune('\t')
-	// 			if len(ip.Aliases) > 0 {
-	// 				b.WriteString(ip.Aliases[0])
-	// 			}
-	// 			b.WriteRune('\t')
-	// 			if len(ip.Aliases) > 1 {
-	// 				a := ip.Aliases[1:]
-	// 				first := true
-	// 				for _, al := range a {
-	// 					if !first {
-	// 						b.WriteRune(' ')
-	// 					} else {
-	// 						first = false
-	// 					}
-	// 					b.WriteString(al)
-	// 				}
-	// 			}
-	// 			b.WriteRune('\t')
-	// 			if ip.Notes != "" {
-	// 				b.WriteString(ip.Notes)
-	// 			}
-	// 			b.WriteRune('\t')
-	// 			b.WriteRune('\n')
-	// 			w.Write([]byte(b.String()))
-	// 		}
-	// 		w.Flush()
-	// 	}
-	// }
+		for _, ip := range m {
+			values := []string{ip.IP, strings.Join(ip.Aliases, ", "), ip.Source, ip.Comment}
+			visible := getVisibleValues(opt, values)
+			fmt.Fprint(w, strings.Join(visible, "\t"))
+			fmt.Fprintln(w)
+		}
 
+		return nil
+	})
+	return err
+}
+
+func writeDataAsJson(opt *IpListOptions, data *hosts.HostsFileContent) error {
+	m := NewIPModels(data, opt.grouping)
+	buff, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(buff))
+	return nil
+}
+
+func writeDataAsYaml(opt *IpListOptions, data *hosts.HostsFileContent) error {
+	m := NewIPModels(data, opt.grouping)
+	buff, err := yaml.Marshal(m)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(buff))
+	return nil
+}
+
+func getVisibleValues(opt *IpListOptions, values []string) []string {
+	// "IP", "HOSTNAME", "SOURCE", "COMMENT"
+	if opt.noComments && opt.noSource {
+		return values[:1]
+	}
+	if opt.noComments {
+		return values[:2]
+	}
+	if opt.noSource {
+		return []string{values[0], values[1], values[3]}
+	}
+	return values
 }

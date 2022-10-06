@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/dnspipe",
-            "args": ["hosts", "ip", "list", "-g", "orig"]
+            "args": ["hosts", "ip", "list", "-g", "ungroup", "-o", "yaml"]
         }
     ]
 }
