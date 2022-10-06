@@ -109,6 +109,8 @@ func (opt *IpListOptions) Execute() error {
 		err = writeDataAsJson(opt, c)
 	case fmtYaml:
 		err = writeDataAsYaml(opt, c)
+	case fmtHosts:
+		err = writeDataAsHosts(opt, c)
 	default:
 		panic("unknown output format")
 	}
@@ -140,6 +142,14 @@ func writeDataAsText(opt *IpListOptions, data *hosts.HostsFileContent) error {
 		return nil
 	})
 	return err
+}
+
+func writeDataAsHosts(opt *IpListOptions, data *hosts.HostsFileContent) error {
+	m := NewIPModels(data, opt.grouping)
+
+	panic("not implemented")
+	fmt.Println(m)
+	return nil
 }
 
 func writeDataAsJson(opt *IpListOptions, data *hosts.HostsFileContent) error {
