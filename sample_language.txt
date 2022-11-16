@@ -49,8 +49,49 @@ dnspipe dns proxy
 dnspipe dns restore
 dnspipe serve [src] [tgt] [profile]
 
+#####################################
+# cmdline - updated concept
+
+hostsctl version
+hostsctl ip list 
+hostsctl ip add [ip] [dns] --group [group_id]
+hostsctl ip edit
+hostsctl ip delete [ip or dns]
+hostsctl block list
+hostsctl block add [id?] [text]
+hostsctl block edit
+hostsctl block delete
+hostsctl block clean [id or index] - removes all IPs in the block
+hostsctl config show
+hostsctl config edit
+
+hostsctl version
+hostsctl get ip [filters]
+hostsctl get block [filters]
+hostsctl add ip
+hostsctl add ip -- [params opt multiline]
+hostsctl add block
+hostsctl delete ip [filters]
+hostsctl delete block [filters]
+hostsctl edit ip
+hostsctl edit block
+hostsctl edit config
+hostsctl show config
+hostsctl show location
+
+hostsctl !192.168.1.2 my.domain.test
+hostsctl +192.168.1.2 my.domain.test
+hostsctl -192.168.1.2
+hostsctl -my.domain.test
+
+hostsctl -192.168.1.2 +192.168.1.2 my.domain.test
+
+
 ##################
 TODO
 add ParseFlags to EtcHosts parsing logic
+
+
+
 
 
