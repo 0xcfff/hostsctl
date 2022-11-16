@@ -3,7 +3,7 @@ package hosts
 import (
 	"fmt"
 
-	"github.com/0xcfff/dnspipe/backend/hosts"
+	"github.com/0xcfff/hostsctl/backend/hosts"
 	"github.com/spf13/cobra"
 )
 

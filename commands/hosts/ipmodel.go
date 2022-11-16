@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/0xcfff/dnspipe/backend/hosts"
+	"github.com/0xcfff/hostsctl/backend/hosts"
 	"golang.org/x/exp/slices"
 )
 

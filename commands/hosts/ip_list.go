@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/0xcfff/dnspipe/backend/hosts"
-	"github.com/0xcfff/dnspipe/commands/common"
-	"github.com/0xcfff/dnspipe/printutil"
+	"github.com/0xcfff/hostsctl/backend/hosts"
+	"github.com/0xcfff/hostsctl/commands/common"
+	"github.com/0xcfff/hostsctl/printutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"

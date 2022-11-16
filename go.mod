@@ -1,4 +1,4 @@
-module github.com/0xcfff/dnspipe
+module github.com/0xcfff/hostsctl
 
 go 1.18
 

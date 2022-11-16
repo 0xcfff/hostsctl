@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/0xcfff/dnspipe/model"
+	"github.com/0xcfff/hostsctl/model"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )

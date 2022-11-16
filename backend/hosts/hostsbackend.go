@@ -4,7 +4,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 
-	"github.com/0xcfff/dnspipe/model"
+	"github.com/0xcfff/hostsctl/model"
 )
 
 type hostsBackend struct {

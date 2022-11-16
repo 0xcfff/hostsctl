@@ -9,8 +9,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/dnspipe",
-            "args": ["hosts", "ip", "list", "-g", "ungroup", "-o", "yaml"]
+            "program": "${workspaceFolder}/cmd/hostsctl",
+            "args": ["hosts", "ip", "add", "192.168.1.1", "mydomain.test.my"]
         }
     ]
 }
