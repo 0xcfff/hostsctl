@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/0xcfff/hostsctl/backend/hosts"
+	"github.com/0xcfff/hostsctl/syntax"
 	"golang.org/x/exp/slices"
 )
 
@@ -27,6 +28,14 @@ const (
 	GrpUngroup  IPGrouping = iota
 	GrpGroup    IPGrouping = iota
 )
+
+func testFunc() {
+	el := &syntax.CommentLine{}
+	el.Type()
+	el.OriginalLineText()
+	el.OriginalLineIndex()
+	qwerty
+}
 
 func NewIPModels(hostsContent *hosts.HostsFileContent, grouping IPGrouping) []*IPModel {
 	var result []*IPModel

@@ -30,6 +30,20 @@
 https://github.com/alecthomas/participle/blob/master/_examples/sql/main.go
 
 
+add function which detects line endings in the parsed file. If can't detect, use OS version
+
+dom or syntax - this should contain low-level constructs
+dom or model - one of these should contain high-level abstraction which could be serialized to syntax constructs
+
+syntax - syntax tree, root - document, leaves - line-level objects (parse + parse options/write) - invisible to end user
+model - model based on syntax tree - hosts document and nested blocks (construct/generate markup or format + generate options). 
+This level objects should understand such things as whether IP is a system and its deletion can bring an issue.
+
+generation modes:
+* minimal intrusion - as close to the source as possible
+* re-format - re-format entire document according to generate options
+use strategies (pattern) to switch between generation modes
+
 
 #####################################
 # cmdline
@@ -62,8 +76,12 @@ hostsctl block add [id?] [text]
 hostsctl block edit
 hostsctl block delete
 hostsctl block clean [id or index] - removes all IPs in the block
-hostsctl config show
+hostsctl config print
+hostsctl config format
 hostsctl config edit
+hostsctl config backup
+hostsctl config restore
+
 
 hostsctl version
 hostsctl get ip [filters]
