@@ -69,6 +69,23 @@ func TestParse(t *testing.T) {
 		assert.Equal(t, "localhost", el0.DomainNames()[0])
 	})
 
+	t.Run("ipv4 only with a comment file", func(t *testing.T) {
+		content := []byte("127.0.0.1 localhost # my own IP")
+		reader := bytes.NewReader(content)
+
+		doc, err := Parse(reader)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, doc)
+		assert.Equal(t, 1, len(doc.Elements()))
+		assert.Equal(t, IPMapping, doc.Elements()[0].Type())
+		el0 := doc.Elements()[0].(*IPMappingLine)
+		assert.Equal(t, "127.0.0.1", el0.IPAddress())
+		assert.Equal(t, 1, len(el0.DomainNames()))
+		assert.Equal(t, "localhost", el0.DomainNames()[0])
+		assert.Equal(t, "my own IP", el0.CommentText())
+	})
+
 	t.Run("ipv6 only file", func(t *testing.T) {
 		content := []byte("fe00::0 ip6-localnet")
 		reader := bytes.NewReader(content)

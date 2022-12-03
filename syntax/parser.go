@@ -4,13 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
+
+	"github.com/0xcfff/hostsctl/iptools"
 )
 
-var (
-	rxIpAddress = regexp.MustCompile(`(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$)|(^[\da-fA-F]{0,}:[\da-fA-F]{0,}:[\da-fA-F]{0,}(:[\da-fA-F]{0,}){0,5}$)`)
-)
 
 // Parses the content and returns parsed document
 func Parse(r io.Reader) (Document, error) {
@@ -69,7 +67,7 @@ func parseLine(idx int, l string) (Element, error) {
 	}
 
 	parts := strings.Fields(tl)
-	if len(parts) > 1 && rxIpAddress.Match([]byte(parts[0])) {
+	if len(parts) > 1 && iptools.IsIP(parts[0]) {
 		fqdns := make([]string, 0)
 		hasComment := false
 		for _, s := range parts[1:] {
@@ -83,7 +81,7 @@ func parseLine(idx int, l string) (Element, error) {
 			comment := ""
 			if hasComment {
 				idx := strings.Index(tl, "#")
-				comment = strings.TrimSpace(tl[idx:])
+				comment = strings.TrimSpace(tl[idx+1:])
 			}
 			return &IPMappingLine{
 				elementBase: elb,
