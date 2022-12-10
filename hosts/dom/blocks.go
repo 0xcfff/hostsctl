@@ -1,7 +1,7 @@
 package dom
 
 import (
-	"github.com/0xcfff/hostsctl/syntax"
+	"github.com/0xcfff/hostsctl/hosts/syntax"
 )
 
 type BlockType int

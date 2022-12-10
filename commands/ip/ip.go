@@ -1,17 +1,16 @@
-package hosts
+package ip
 
 import "github.com/spf13/cobra"
 
-func NewCmdHosts() *cobra.Command {
+func NewCmdIp() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "hosts [command]",
-		Short: "manages /etc/hosts file",
+		Use: "ip [command]",
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(cmd.Help())
 		},
 	}
-
-	cmd.AddCommand(NewCmdIp())
+	cmd.AddCommand(NewCmdIpList())
+	cmd.AddCommand(NewCmdIpAdd())
 
 	return cmd
 }

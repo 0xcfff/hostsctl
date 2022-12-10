@@ -9,16 +9,15 @@ import (
 	"github.com/0xcfff/hostsctl/iptools"
 )
 
-
 // Parses the content and returns parsed document
-func Parse(r io.Reader) (Document, error) {
+func Parse(r io.Reader) (*Document, error) {
 	s := bufio.NewScanner(r)
 	s.Split(createLinesSplitterFunc())
 	els, err := parseLines(s)
 	if err != nil {
 		return nil, err
 	}
-	doc := document{
+	doc := Document{
 		elements: els,
 	}
 	return &doc, nil

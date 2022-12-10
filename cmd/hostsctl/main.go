@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	hsts "github.com/0xcfff/hostsctl/commands/hosts"
+	"github.com/0xcfff/hostsctl/commands/ip"
 	"github.com/0xcfff/hostsctl/commands/version"
 	"github.com/spf13/cobra"
 )
@@ -32,5 +32,5 @@ func init() {
 	}
 
 	rootCmd.AddCommand(version.NewCmdVersion())
-	rootCmd.AddCommand(hsts.NewCmdHosts())
+	rootCmd.AddCommand(ip.NewCmdIp())
 }

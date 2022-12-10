@@ -1,6 +1,7 @@
 package version
 
 import (
+	"os"
 	"fmt"
 	"runtime/debug"
 

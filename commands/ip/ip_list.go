@@ -1,4 +1,4 @@
-package hosts
+package ip
 
 import (
 	"encoding/json"
@@ -7,8 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/0xcfff/hostsctl/backend/hosts"
 	"github.com/0xcfff/hostsctl/commands/common"
+	"github.com/0xcfff/hostsctl/hosts"
+	"github.com/0xcfff/hostsctl/hosts/dom"
 	"github.com/0xcfff/hostsctl/printutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
@@ -47,7 +48,7 @@ type IpListOptions struct {
 	outputGrouping string
 	grouping       IPGrouping
 	noHeaders      bool
-	noSource       bool
+	noGroup        bool
 	noComments     bool
 }
 
@@ -66,8 +67,8 @@ func NewCmdIpList() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&opt.noHeaders, "no-headers", opt.noHeaders, "Disable printing headers")
-	cmd.Flags().BoolVar(&opt.noSource, "no-source", opt.noSource, "Do not show IP sources")
-	cmd.Flags().BoolVar(&opt.noComments, "no-comments", opt.noSource, "Do not show comments")
+	cmd.Flags().BoolVar(&opt.noGroup, "no-group", opt.noGroup, "Do not show IP group")
+	cmd.Flags().BoolVar(&opt.noComments, "no-comments", opt.noComments, "Do not show comments")
 	cmd.Flags().StringVarP(&opt.outputFormat, "output", "o", opt.outputFormat, fmt.Sprintf("Output format. One of %s", strings.Join(maps.Keys(formats), ",")))
 	cmd.Flags().StringVarP(&opt.outputGrouping, "grouping", "g", opt.outputFormat, fmt.Sprintf("IPs grouping. One of %s", strings.Join(maps.Keys(groupings), ",")))
 
@@ -95,11 +96,7 @@ func (opt *IpListOptions) Validate() error {
 }
 
 func (opt *IpListOptions) Execute() error {
-	fs := hosts.NewHostsFileSource("", nil)
-	// f, err := fs.LoadFile()
-	// cobra.CheckErr(err)
-	// cips :=
-	c, err := fs.LoadAndParse(hosts.Strict, hosts.None)
+	c, err := hosts.EtcHosts.Load()
 	cobra.CheckErr(err)
 
 	switch opt.output {
@@ -120,20 +117,20 @@ func (opt *IpListOptions) Execute() error {
 
 }
 
-func writeDataAsText(opt *IpListOptions, data *hosts.HostsFileContent) error {
+func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 	m := NewIPModels(data, opt.grouping)
 
 	err := printutil.PrintTabbed(os.Stdout, nil, 2, func(w io.Writer) error {
 
 		if !opt.noHeaders {
-			columns := []string{"IP", "HOSTNAME", "SOURCE", "COMMENT"}
+			columns := []string{"IP", "HOSTNAME", "GROUP", "COMMENT"}
 			visible := getVisibleValues(opt, columns)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
 			fmt.Fprintln(w)
 		}
 
 		for _, ip := range m {
-			values := []string{ip.IP, strings.Join(ip.Aliases, ", "), ip.Source, ip.Comment}
+			values := []string{ip.IP, strings.Join(ip.Aliases, ", "), ip.Group, ip.Comment}
 			visible := getVisibleValues(opt, values)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
 			fmt.Fprintln(w)
@@ -144,7 +141,7 @@ func writeDataAsText(opt *IpListOptions, data *hosts.HostsFileContent) error {
 	return err
 }
 
-func writeDataAsHosts(opt *IpListOptions, data *hosts.HostsFileContent) error {
+func writeDataAsHosts(opt *IpListOptions, data *dom.Document) error {
 	m := NewIPModels(data, opt.grouping)
 
 	panic("not implemented")
@@ -152,7 +149,7 @@ func writeDataAsHosts(opt *IpListOptions, data *hosts.HostsFileContent) error {
 	return nil
 }
 
-func writeDataAsJson(opt *IpListOptions, data *hosts.HostsFileContent) error {
+func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
 	m := NewIPModels(data, opt.grouping)
 	buff, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
@@ -162,7 +159,7 @@ func writeDataAsJson(opt *IpListOptions, data *hosts.HostsFileContent) error {
 	return nil
 }
 
-func writeDataAsYaml(opt *IpListOptions, data *hosts.HostsFileContent) error {
+func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
 	m := NewIPModels(data, opt.grouping)
 	buff, err := yaml.Marshal(m)
 	if err != nil {
@@ -174,13 +171,13 @@ func writeDataAsYaml(opt *IpListOptions, data *hosts.HostsFileContent) error {
 
 func getVisibleValues(opt *IpListOptions, values []string) []string {
 	// "IP", "HOSTNAME", "SOURCE", "COMMENT"
-	if opt.noComments && opt.noSource {
+	if opt.noComments && opt.noGroup {
 		return values[:1]
 	}
 	if opt.noComments {
 		return values[:2]
 	}
-	if opt.noSource {
+	if opt.noGroup {
 		return []string{values[0], values[1], values[3]}
 	}
 	return values

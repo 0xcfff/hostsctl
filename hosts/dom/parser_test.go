@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/0xcfff/hostsctl/syntax"
+	"github.com/0xcfff/hostsctl/hosts/syntax"
 	"github.com/stretchr/testify/assert"
 )
 

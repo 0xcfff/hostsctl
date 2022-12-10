@@ -1,10 +1,11 @@
 package dom
 
 import (
+	"io"
 	"strings"
 
+	"github.com/0xcfff/hostsctl/hosts/syntax"
 	"github.com/0xcfff/hostsctl/iptools"
-	"github.com/0xcfff/hostsctl/syntax"
 )
 
 type parsingState int
@@ -28,18 +29,16 @@ type parserContext struct {
 	unrecognizedList []syntax.Element
 }
 
-func newParseContext() parserContext {
-	return parserContext{
-		recognizedBlocks: make([]Block, 0),
-		state:            notStarted,
-		commentsList:     make([]*syntax.CommentLine, 0),
-		blanksList:       make([]*syntax.EmptyLine, 0),
-		ipsList:          make([]syntax.Element, 0),
-		unrecognizedList: make([]syntax.Element, 0),
+func Parse(r io.Reader) (*Document, error) {
+	sdoc, err := syntax.Parse(r)
+	if err != nil {
+		return nil, err
 	}
+
+	return parse(sdoc), nil
 }
 
-func parse(doc syntax.Document) Document {
+func parse(doc *syntax.Document) *Document {
 
 	ctx := newParseContext()
 
@@ -52,7 +51,7 @@ func parse(doc syntax.Document) Document {
 	}
 	ctx.finishBlock()
 
-	return Document{
+	return &Document{
 		originalDocument: doc,
 		blocks:           ctx.recognizedBlocks,
 	}
@@ -165,5 +164,16 @@ func (ctx *parserContext) finishBlock() {
 		break
 	default:
 		panic("Unknown block type")
+	}
+}
+
+func newParseContext() parserContext {
+	return parserContext{
+		recognizedBlocks: make([]Block, 0),
+		state:            notStarted,
+		commentsList:     make([]*syntax.CommentLine, 0),
+		blanksList:       make([]*syntax.EmptyLine, 0),
+		ipsList:          make([]syntax.Element, 0),
+		unrecognizedList: make([]syntax.Element, 0),
 	}
 }

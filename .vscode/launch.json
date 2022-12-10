@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/hostsctl",
-            "args": ["hosts", "ip", "add", "192.168.1.1", "mydomain.test.my"]
+            "args": ["ip", "list", "-o", "json"]
         }
     ]
 }
