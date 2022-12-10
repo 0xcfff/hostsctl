@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/0xcfff/hostsctl/commands/common"
@@ -43,6 +42,7 @@ var (
 )
 
 type IpListOptions struct {
+	cmd 		   *cobra.Command
 	outputFormat   string
 	output         outFormat
 	outputGrouping string
@@ -58,7 +58,7 @@ func NewCmdIpList() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "list [(-o|--output)=name] [filter]",
-		Short: "Lists IP addresses and aliases defined in /etc/hosts",
+		Short: fmt.Sprintf("Lists IP addresses and aliases defined in %s", hosts.EtcHosts.Path()),
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())
@@ -76,6 +76,8 @@ func NewCmdIpList() *cobra.Command {
 }
 
 func (opt *IpListOptions) Complete(cmd *cobra.Command, args []string) error {
+
+	opt.cmd = cmd
 
 	var ok bool
 	opt.output, ok = formats[opt.outputFormat]
@@ -120,7 +122,7 @@ func (opt *IpListOptions) Execute() error {
 func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 	m := NewIPModels(data, opt.grouping)
 
-	err := printutil.PrintTabbed(os.Stdout, nil, 2, func(w io.Writer) error {
+	err := printutil.PrintTabbed(opt.cmd.OutOrStdout(), nil, 2, func(w io.Writer) error {
 
 		if !opt.noHeaders {
 			columns := []string{"IP", "HOSTNAME", "GROUP", "COMMENT"}
@@ -155,7 +157,7 @@ func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(buff))
+	fmt.Fprintln(opt.cmd.OutOrStdout(), string(buff))
 	return nil
 }
 
@@ -165,7 +167,7 @@ func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(buff))
+	fmt.Fprintln(opt.cmd.OutOrStdout(), string(buff))
 	return nil
 }
 

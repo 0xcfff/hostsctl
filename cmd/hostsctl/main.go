@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/0xcfff/hostsctl/commands/ip"
@@ -16,16 +15,14 @@ var (
 func main() {
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println("error executing command")
 		os.Exit(1)
 	}
-	fmt.Println("executing successfully")
 	os.Exit(0)
 }
 
 func init() {
 	rootCmd = &cobra.Command{
-		Short: "syncdns synchronizes dns records from various sources to local stores (/etc/hosts, text files, etc)",
+		Short: "hostsctl manages ip to hostname mappings (usually stored in /etc/hosts)",
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(cmd.Help())
 		},
