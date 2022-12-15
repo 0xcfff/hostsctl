@@ -2,6 +2,12 @@ package ip
 
 import "github.com/spf13/cobra"
 
+type ipCommandContextValue int
+
+const (
+	ctxCustomFs ipCommandContextValue = iota
+)
+
 func NewCmdIp() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "ip [command]",

@@ -34,15 +34,16 @@ var (
 	}
 
 	groupings = map[string]IPGrouping{
-		"":        GrpOriginal,
-		"orig":    GrpOriginal,
-		"group":   GrpGroup,
-		"ungroup": GrpUngroup,
+		"":         GrpOriginal,
+		"orig":     GrpOriginal,
+		"original": GrpOriginal,
+		"combine":  GrpGroup,
+		"ungroup":  GrpUngroup,
 	}
 )
 
 type IpListOptions struct {
-	cmd 		   *cobra.Command
+	cmd            *cobra.Command
 	outputFormat   string
 	output         outFormat
 	outputGrouping string
