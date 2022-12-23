@@ -1,4 +1,4 @@
-package ip
+package host
 
 import (
 	"encoding/json"
@@ -126,7 +126,7 @@ func (opt *IpListOptions) Execute() error {
 }
 
 func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
-	m := NewIPModels(data, opt.grouping)
+	m := NewHostModels(data, opt.grouping)
 
 	err := printutil.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 
@@ -138,7 +138,7 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 			fmt.Fprintln(w)
 		}
 
-		var prev *IPModel
+		var prev *HostModel
 		var grpId int = 0
 
 		for _, ip := range m {
@@ -151,18 +151,18 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 			sys := ""
 			cntSystem := 0
 
-			for _, alias := range ip.Aliases {
+			for _, alias := range ip.Hosts {
 				if iptools.IsSystemAlias(ip.IP, alias) {
 					cntSystem += 1
 				}
 			}
-			if cntSystem == len(ip.Aliases) {
+			if cntSystem == len(ip.Hosts) {
 				sys = "+"
 			} else if cntSystem > 0 {
 				sys = "*"
 			}
 
-			values := []string{grp, sys, strings.Join(ip.Aliases, ", "), ip.IP} // ip.Group, ip.Comment
+			values := []string{grp, sys, strings.Join(ip.Hosts, ", "), ip.IP} // ip.Group, ip.Comment
 
 			visible := getVisibleValues(opt, values)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
@@ -176,7 +176,7 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 }
 
 func writeDataAsHosts(opt *IpListOptions, data *dom.Document) error {
-	m := NewIPModels(data, opt.grouping)
+	m := NewHostModels(data, opt.grouping)
 
 	panic("not implemented")
 	fmt.Println(m)
@@ -184,7 +184,7 @@ func writeDataAsHosts(opt *IpListOptions, data *dom.Document) error {
 }
 
 func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
-	m := NewIPModels(data, opt.grouping)
+	m := NewHostModels(data, opt.grouping)
 	buff, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return err
@@ -194,7 +194,7 @@ func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
 }
 
 func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
-	m := NewIPModels(data, opt.grouping)
+	m := NewHostModels(data, opt.grouping)
 	buff, err := yaml.Marshal(m)
 	if err != nil {
 		return err

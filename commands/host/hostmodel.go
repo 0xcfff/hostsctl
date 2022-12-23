@@ -1,4 +1,4 @@
-package ip
+package host
 
 import (
 	"fmt"
@@ -9,16 +9,16 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type IPModel struct {
+type HostModel struct {
 	IP      string   `json:"ip"`
-	Aliases []string `json:"aliases"`
+	Hosts   []string `json:"hosts"`
 	Comment string   `json:"comment,omitempty"`
 	Group   string   `json:"group,omitempty"`
 }
 
-type IPGroupModel struct {
-	Name string    `json:"name"`
-	IPs  []IPModel `json:"ips"`
+type HostGroupModel struct {
+	Name string      `json:"name"`
+	IPs  []HostModel `json:"ips"`
 }
 
 type IPGrouping int
@@ -29,8 +29,8 @@ const (
 	GrpGroup    IPGrouping = iota
 )
 
-func NewIPModels(doc *dom.Document, grouping IPGrouping) []*IPModel {
-	var result []*IPModel = make([]*IPModel, 0)
+func NewHostModels(doc *dom.Document, grouping IPGrouping) []*HostModel {
+	var result []*HostModel = make([]*HostModel, 0)
 
 	ipsBlockIdx := 0
 	for _, block := range doc.Blocks() {
@@ -44,7 +44,7 @@ func NewIPModels(doc *dom.Document, grouping IPGrouping) []*IPModel {
 	return result
 }
 
-func convertIPs(ips *dom.IPListBlock, source string, grouping IPGrouping) []*IPModel {
+func convertIPs(ips *dom.IPListBlock, source string, grouping IPGrouping) []*HostModel {
 	switch grouping {
 	case GrpUngroup:
 		return ungroupAndConvert(ips, source)
@@ -57,16 +57,16 @@ func convertIPs(ips *dom.IPListBlock, source string, grouping IPGrouping) []*IPM
 	}
 }
 
-func ungroupAndConvert(ips *dom.IPListBlock, source string) []*IPModel {
-	result := make([]*IPModel, 0)
+func ungroupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
+	result := make([]*HostModel, 0)
 
 	for _, r := range ips.BodyElements() {
 		if r.Type() == syntax.IPMapping {
 			rr := r.(*syntax.IPMappingLine)
 			for _, al := range rr.DomainNames() {
-				ip := &IPModel{
+				ip := &HostModel{
 					IP:      rr.IPAddress(),
-					Aliases: []string{al},
+					Hosts:   []string{al},
 					Comment: rr.CommentText(),
 					Group:   source,
 				}
@@ -77,9 +77,9 @@ func ungroupAndConvert(ips *dom.IPListBlock, source string) []*IPModel {
 	return result
 }
 
-func groupAndConvert(ips *dom.IPListBlock, source string) []*IPModel {
-	result := make([]*IPModel, 0)
-	ipsMap := make(map[string]*IPModel)
+func groupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
+	result := make([]*HostModel, 0)
+	ipsMap := make(map[string]*HostModel)
 	ipsComments := make(map[string][]string)
 
 	for _, r := range ips.BodyElements() {
@@ -87,7 +87,7 @@ func groupAndConvert(ips *dom.IPListBlock, source string) []*IPModel {
 			rr := r.(*syntax.IPMappingLine)
 			ip, ok := ipsMap[rr.IPAddress()]
 			if !ok {
-				ip := &IPModel{
+				ip := &HostModel{
 					IP:      rr.IPAddress(),
 					Group:   source,
 					Comment: rr.CommentText(),
@@ -101,7 +101,7 @@ func groupAndConvert(ips *dom.IPListBlock, source string) []*IPModel {
 				}
 				ipsComments[rr.IPAddress()] = comments
 			}
-			ip.Aliases = append(ip.Aliases, rr.DomainNames()...)
+			ip.Hosts = append(ip.Hosts, rr.DomainNames()...)
 
 			comments := ipsComments[ip.IP]
 			if ip.Comment != "" && !slices.Contains(comments, ip.Comment) {
@@ -114,16 +114,16 @@ func groupAndConvert(ips *dom.IPListBlock, source string) []*IPModel {
 	return result
 }
 
-func convertOnly(ips *dom.IPListBlock, source string) []*IPModel {
-	result := make([]*IPModel, 0)
+func convertOnly(ips *dom.IPListBlock, source string) []*HostModel {
+	result := make([]*HostModel, 0)
 
 	for _, r := range ips.BodyElements() {
 		if r.Type() == syntax.IPMapping {
 			rr := r.(*syntax.IPMappingLine)
-			ip := &IPModel{
+			ip := &HostModel{
 				IP:      rr.IPAddress(),
 				Comment: rr.CommentText(),
-				Aliases: rr.DomainNames(),
+				Hosts:   rr.DomainNames(),
 				Group:   source,
 			}
 			result = append(result, ip)

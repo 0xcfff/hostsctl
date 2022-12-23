@@ -1,4 +1,4 @@
-package ip
+package host
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIpListCommand(t *testing.T) {
+func TestHostListCommand(t *testing.T) {
 	type args struct {
 		args       []string
 		inputFile  string

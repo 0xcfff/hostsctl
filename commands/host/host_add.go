@@ -1,4 +1,4 @@
-package ip
+package host
 
 import (
 	"fmt"
@@ -7,8 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdIpAdd() *cobra.Command {
+func NewCmdHostAdd() *cobra.Command {
 	cmd := &cobra.Command{
+		// TODO: review below
 		Use:   "add [ip] [alias]...",
 		Short: "Adds IP address and aliases to /etc/hosts file",
 		Run: func(cmd *cobra.Command, args []string) {
