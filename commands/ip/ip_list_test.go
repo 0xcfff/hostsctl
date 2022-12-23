@@ -2,6 +2,7 @@ package ip
 
 import (
 	"context"
+	"os"
 	"strings"
 	"testing"
 
@@ -12,91 +13,106 @@ import (
 )
 
 func TestNewCmdIpList(t *testing.T) {
-	t.Run("list empty", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
-		f, _ := fs.Create(hosts.EtcHosts.Path())
-		f.WriteString("")
-		f.Close()
+	type args struct {
+		args       []string
+		inputFile  string
+		outputFile string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			"empty",
+			args{[]string{},
+				"testdata/empty.txt",
+				"testdata/list/empty_default.txt",
+			},
+			true,
+		},
+		{
+			"one line",
+			args{[]string{},
+				"testdata/one-ip.txt",
+				"testdata/list/one-ip_default.txt",
+			},
+			true,
+		},
+		// json set of tests
+		{
+			"empty json",
+			args{[]string{"-o", "json"},
+				"testdata/empty.txt",
+				"testdata/list/empty_json.txt",
+			},
+			true,
+		},
+	}
 
-		ctx := common.WithCustomFilesystem(context.Background(), fs)
-		out := &strings.Builder{}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// arrange
+			fs := afero.NewMemMapFs()
+			fn := hosts.EtcHosts.Path()
+			f, err := fs.Create(fn)
+			if err != nil {
+				t.Errorf("Can't create %v", fn)
+				t.FailNow()
+			}
+			data, err := os.ReadFile(tt.args.inputFile)
+			if err != nil {
+				t.Errorf("Can't read %v", tt.args.inputFile)
+				t.FailNow()
+			}
+			sdata := string(data)
+			f.WriteString(sdata)
+			f.Close()
 
-		cmd := NewCmdIpList()
-		cmd.SetArgs(make([]string, 0))
-		cmd.SetOutput(out)
+			expectData, err := os.ReadFile(tt.args.outputFile)
+			if err != nil {
+				t.Errorf("Can't read %v", tt.args.outputFile)
+				t.FailNow()
+			}
+			expectOut := string(expectData)
 
-		expectOut := "GRP  SYS  IP  ALIAS\n"
+			ctx := common.WithCustomFilesystem(context.Background(), fs)
+			out := &strings.Builder{}
 
-		// TODO: Refactor tests
+			cmd := NewCmdIpList()
+			cmd.SetArgs(tt.args.args)
+			cmd.SetOutput(out)
+			cmd.SetContext(ctx)
 
-		c, err := cmd.ExecuteContextC(ctx)
+			// act
+			c, err := cmd.ExecuteC()
 
-		assert.NoError(t, err, "command should succeed")
-		assert.Same(t, cmd, c)
+			// assert
+			if tt.want {
+				assert.NoError(t, err, "command should succeed")
+			} else {
+				assert.Error(t, err, "command should fail")
+			}
 
-		// Add GRP and SYS columns to output
-		// GRP  SYS  IP          ALIAS
-		// [+]   +   127.0.0.1   localhost
-		//           127.0.0.2   router
-		//           127.0.0.3   printer
-		// [+]   +   ::1         ip6-localhost
-		//       +   ::1         ip6-loopback
-		//       +   e00::0      ip6-localnet
-		//       +   e00::0      ip6-mcastprefix
-		//       +   e00::0      ip6-allnodes
-		//       +   e00::0      ip6-allrouters
-		// [+]       10.0.0.101  hhost1
-		//           10.0.0.102  hhost2
+			assert.Same(t, cmd, c)
 
-		s := out.String()
-		assert.Equal(t, expectOut, s)
-	})
-	t.Run("list one line", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
-		f, _ := fs.Create(hosts.EtcHosts.Path())
-		f.WriteString("127.0.0.1   localhost")
-		f.Close()
+			s := out.String()
+			assert.Equal(t, expectOut, s)
 
-		ctx := common.WithCustomFilesystem(context.Background(), fs)
-		out := &strings.Builder{}
-
-		cmd := NewCmdIpList()
-		cmd.SetArgs(make([]string, 0))
-		cmd.SetOutput(out)
-
-		expectOut :=
-			`GRP  SYS  IP         ALIAS
-[+]  +    127.0.0.1  localhost
-`
-
-		c, err := cmd.ExecuteContextC(ctx)
-
-		assert.NoError(t, err, "command should succeed")
-		assert.Same(t, cmd, c)
-
-		s := out.String()
-		assert.Equal(t, expectOut, s)
-	})
-
-	t.Run("list empty json", func(t *testing.T) {
-		fs := afero.NewMemMapFs()
-		f, _ := fs.Create(hosts.EtcHosts.Path())
-		f.WriteString("")
-		f.Close()
-
-		ctx := common.WithCustomFilesystem(context.Background(), fs)
-		out := &strings.Builder{}
-
-		cmd := NewCmdIpList()
-		cmd.SetArgs([]string{"-o", "json"})
-		cmd.SetOutput(out)
-
-		c, err := cmd.ExecuteContextC(ctx)
-
-		assert.NoError(t, err, "command should succeed")
-		assert.Same(t, cmd, c)
-
-		assert.Fail(t, "Implement correct result check and command support of custom FS")
-
-	})
+			// Sample output:
+			// Add GRP and SYS columns to output
+			// GRP  SYS  IP          ALIAS
+			// [+]   +   127.0.0.1   localhost
+			//           127.0.0.2   router
+			//           127.0.0.3   printer
+			// [+]   +   ::1         ip6-localhost
+			//       +   ::1         ip6-loopback
+			//       +   e00::0      ip6-localnet
+			//       +   e00::0      ip6-mcastprefix
+			//       +   e00::0      ip6-allnodes
+			//       +   e00::0      ip6-allrouters
+			// [+]       10.0.0.101  hhost1
+			//           10.0.0.102  hhost2
+		})
+	}
 }

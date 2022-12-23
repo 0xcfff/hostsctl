@@ -3,7 +3,10 @@ package iptools
 import "strings"
 
 var (
-	systemAliases = [][]string{{"127.0.0.1", "localhost"}}
+	systemAliases = [][]string{
+		{"127.0.0.1", "localhost"},
+		{"::1", "ip6-localhost"},
+	}
 )
 
 func IsSystemAlias(ip string, alias string) bool {

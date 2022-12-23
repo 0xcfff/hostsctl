@@ -71,6 +71,10 @@ hostsctl ip list
 hostsctl ip add [ip] [dns] --group [group_id]
 hostsctl ip edit
 hostsctl ip delete [ip or dns]
+hostsctl alias list 
+hostsctl alias add [ip] [dns] --group [group_id]
+hostsctl alias edit
+hostsctl alias delete [ip or dns]
 hostsctl block list
 hostsctl block add [id?] [text]
 hostsctl block edit

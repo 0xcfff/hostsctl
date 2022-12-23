@@ -30,7 +30,7 @@ const (
 )
 
 func NewIPModels(doc *dom.Document, grouping IPGrouping) []*IPModel {
-	var result []*IPModel
+	var result []*IPModel = make([]*IPModel, 0)
 
 	ipsBlockIdx := 0
 	for _, block := range doc.Blocks() {

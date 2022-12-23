@@ -19,5 +19,9 @@ func WithCustomFilesystem(ctx context.Context, fs afero.Fs) context.Context {
 
 // Returns filesystem override if any
 func FileSystem(ctx context.Context) afero.Fs {
-	return ctx.Value(ctxCustomFileSystem).(afero.Fs)
+	fso := ctx.Value(ctxCustomFileSystem)
+	if fso != nil {
+		return fso.(afero.Fs)
+	}
+	return nil
 }
