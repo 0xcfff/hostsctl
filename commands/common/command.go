@@ -1,19 +1,7 @@
 package common
 
-import "github.com/spf13/cobra"
-
-type OutputFormat int
-
-const (
-	FmtText OutputFormat = iota
-	FmtJson OutputFormat = iota
-	FmtYaml OutputFormat = iota
-)
-
-const (
-	TfmtText = "text"
-	TfmtJson = "json"
-	TfmtYaml = "yaml"
+import (
+	"github.com/spf13/cobra"
 )
 
 type GlobalOptions struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
 	"github.com/0xcfff/hostsctl/hosts/dom"
+	"github.com/0xcfff/hostsctl/iptools"
 	"github.com/0xcfff/hostsctl/printutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
@@ -19,7 +20,9 @@ type outFormat int
 
 const (
 	fmtText  outFormat = iota
-	fmtHosts outFormat = iota
+	fmtShort outFormat = iota
+	fmtWide  outFormat = iota
+	fmtRaw   outFormat = iota
 	fmtJson  outFormat = iota
 	fmtYaml  outFormat = iota
 )
@@ -28,9 +31,11 @@ var (
 	formats = map[string]outFormat{
 		"":              fmtText,
 		common.TfmtText: fmtText,
+		"short":         fmtShort,
+		"wide":          fmtWide,
+		"raw":           fmtRaw,
 		common.TfmtJson: fmtJson,
 		common.TfmtYaml: fmtYaml,
-		"hosts":         fmtHosts,
 	}
 
 	groupings = map[string]IPGrouping{
@@ -43,7 +48,7 @@ var (
 )
 
 type IpListOptions struct {
-	cmd            *cobra.Command
+	command        *cobra.Command
 	outputFormat   string
 	output         outFormat
 	outputGrouping string
@@ -78,7 +83,7 @@ func NewCmdIpList() *cobra.Command {
 
 func (opt *IpListOptions) Complete(cmd *cobra.Command, args []string) error {
 
-	opt.cmd = cmd
+	opt.command = cmd
 
 	var ok bool
 	opt.output, ok = formats[opt.outputFormat]
@@ -99,7 +104,8 @@ func (opt *IpListOptions) Validate() error {
 }
 
 func (opt *IpListOptions) Execute() error {
-	c, err := hosts.EtcHosts.Load()
+	src := hosts.NewSource(hosts.EtcHosts.Path(), common.FileSystem(opt.command.Context()))
+	c, err := src.Load()
 	cobra.CheckErr(err)
 
 	switch opt.output {
@@ -109,7 +115,7 @@ func (opt *IpListOptions) Execute() error {
 		err = writeDataAsJson(opt, c)
 	case fmtYaml:
 		err = writeDataAsYaml(opt, c)
-	case fmtHosts:
+	case fmtRaw:
 		err = writeDataAsHosts(opt, c)
 	default:
 		panic("unknown output format")
@@ -117,26 +123,50 @@ func (opt *IpListOptions) Execute() error {
 	cobra.CheckErr(err)
 
 	return nil
-
 }
 
 func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 	m := NewIPModels(data, opt.grouping)
 
-	err := printutil.PrintTabbed(opt.cmd.OutOrStdout(), nil, 2, func(w io.Writer) error {
+	err := printutil.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 
 		if !opt.noHeaders {
-			columns := []string{"IP", "HOSTNAME", "GROUP", "COMMENT"}
+			// columns := []string{"IP", "HOSTNAME", "GROUP", "COMMENT"}
+			columns := []string{"GRP", "SYS", "IP", "ALIAS"}
 			visible := getVisibleValues(opt, columns)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
 			fmt.Fprintln(w)
 		}
 
+		var prev *IPModel
+
 		for _, ip := range m {
-			values := []string{ip.IP, strings.Join(ip.Aliases, ", "), ip.Group, ip.Comment}
+			grp := ""
+			if prev == nil || prev.Group != ip.Group {
+				grp = "[+]"
+			}
+
+			// TODO: implement below
+			sys := ""
+			cntSystem := 0
+
+			for _, alias := range ip.Aliases {
+				if iptools.IsSystemAlias(ip.IP, alias) {
+					cntSystem += 1
+				}
+			}
+			if cntSystem == len(ip.Aliases) {
+				sys = "+"
+			} else if cntSystem > 0 {
+				sys = "*"
+			}
+
+			values := []string{grp, sys, ip.IP, strings.Join(ip.Aliases, ", ")} // ip.Group, ip.Comment
+
 			visible := getVisibleValues(opt, values)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
 			fmt.Fprintln(w)
+			prev = ip
 		}
 
 		return nil
@@ -158,7 +188,7 @@ func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(opt.cmd.OutOrStdout(), string(buff))
+	fmt.Fprintln(opt.command.OutOrStdout(), string(buff))
 	return nil
 }
 
@@ -168,12 +198,13 @@ func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(opt.cmd.OutOrStdout(), string(buff))
+	fmt.Fprintln(opt.command.OutOrStdout(), string(buff))
 	return nil
 }
 
 func getVisibleValues(opt *IpListOptions, values []string) []string {
 	// "IP", "HOSTNAME", "SOURCE", "COMMENT"
+	// "GRP", "SYS", "IP", "ALIAS"
 	if opt.noComments && opt.noGroup {
 		return values[:1]
 	}
