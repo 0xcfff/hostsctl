@@ -14,7 +14,7 @@ func TestIsSystemAlias(t *testing.T) {
 	}{
 		{"localhost", args{"127.0.0.1", "localhost"}, true},
 		{"localhost umixed registry", args{"127.0.0.1", "LocalHost"}, true},
-		{"127.0.0.01 localhost", args{"127.0.0.01", "localhost"}, true},
+		{"127.0.0.01 localhost", args{"127.0.0.01", "localhost"}, false}, // not supported by go
 		{"127.0.0.1 to custom", args{"127.0.0.1", "custom"}, false},
 		{"public to custom", args{"55.03.04.99", "custom"}, false},
 		{"::1 to ipv6-localhost", args{"::1", "ip6-localhost"}, true},
