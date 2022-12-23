@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/0xcfff/hostsctl/commands/ip"
+	"github.com/0xcfff/hostsctl/commands/host"
 	"github.com/0xcfff/hostsctl/commands/version"
 	"github.com/spf13/cobra"
 )
@@ -29,5 +29,5 @@ func init() {
 	}
 
 	rootCmd.AddCommand(version.NewCmdVersion())
-	rootCmd.AddCommand(ip.NewCmdIp())
+	rootCmd.AddCommand(host.NewCmdHost())
 }
