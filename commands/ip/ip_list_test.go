@@ -24,7 +24,7 @@ func TestIpListCommand(t *testing.T) {
 		want bool
 	}{
 		{
-			"empty",
+			"default empty",
 			args{
 				[]string{},
 				"testdata/empty.txt",
@@ -33,7 +33,7 @@ func TestIpListCommand(t *testing.T) {
 			true,
 		},
 		{
-			"one line",
+			"default one line",
 			args{
 				[]string{},
 				"testdata/one-ip.txt",
@@ -42,7 +42,7 @@ func TestIpListCommand(t *testing.T) {
 			true,
 		},
 		{
-			"two blocks",
+			"default two blocks",
 			args{
 				[]string{},
 				"testdata/two-sys-blocks.txt",
@@ -52,7 +52,7 @@ func TestIpListCommand(t *testing.T) {
 		},
 		// json set of tests
 		{
-			"empty json",
+			"json empty",
 			args{
 				[]string{"-o", "json"},
 				"testdata/empty.txt",
@@ -124,6 +124,21 @@ func TestIpListCommand(t *testing.T) {
 			//       +   e00::0      ip6-allnodes
 			//       +   e00::0      ip6-allrouters
 			// [+]       10.0.0.101  hhost1
+			//           10.0.0.102  hhost2
+
+			// Sample output:
+			// Add GRP and SYS columns to output
+			// GRP  SYS  IP          ALIAS
+			// [1]   +   127.0.0.1   localhost
+			//           127.0.0.2   router
+			//           127.0.0.3   printer
+			// [2]   +   ::1         ip6-localhost
+			//       +   ::1         ip6-loopback
+			//       +   e00::0      ip6-localnet
+			//       +   e00::0      ip6-mcastprefix
+			//       +   e00::0      ip6-allnodes
+			//       +   e00::0      ip6-allrouters
+			// [3]       10.0.0.101  hhost1
 			//           10.0.0.102  hhost2
 		})
 	}

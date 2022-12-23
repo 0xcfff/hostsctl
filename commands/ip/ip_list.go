@@ -39,7 +39,7 @@ var (
 	}
 
 	groupings = map[string]IPGrouping{
-		"":         GrpOriginal,
+		"":         GrpUngroup,
 		"orig":     GrpOriginal,
 		"original": GrpOriginal,
 		"combine":  GrpGroup,
@@ -139,14 +139,15 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 		}
 
 		var prev *IPModel
+		var grpId int = 0
 
 		for _, ip := range m {
 			grp := ""
 			if prev == nil || prev.Group != ip.Group {
-				grp = "[+]"
+				grpId += 1
+				grp = fmt.Sprintf("[%v]", grpId)
 			}
 
-			// TODO: implement below
 			sys := ""
 			cntSystem := 0
 
