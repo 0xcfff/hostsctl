@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewCmdIpList(t *testing.T) {
+func TestIpListCommand(t *testing.T) {
 	type args struct {
 		args       []string
 		inputFile  string
@@ -25,26 +25,38 @@ func TestNewCmdIpList(t *testing.T) {
 	}{
 		{
 			"empty",
-			args{[]string{},
+			args{
+				[]string{},
 				"testdata/empty.txt",
-				"testdata/list/empty_default.txt",
+				"testdata/list/default_empty.txt",
 			},
 			true,
 		},
 		{
 			"one line",
-			args{[]string{},
+			args{
+				[]string{},
 				"testdata/one-ip.txt",
-				"testdata/list/one-ip_default.txt",
+				"testdata/list/default_one-ip.txt",
+			},
+			true,
+		},
+		{
+			"two blocks",
+			args{
+				[]string{},
+				"testdata/two-sys-blocks.txt",
+				"testdata/list/default_two-sys-blocks.txt",
 			},
 			true,
 		},
 		// json set of tests
 		{
 			"empty json",
-			args{[]string{"-o", "json"},
+			args{
+				[]string{"-o", "json"},
 				"testdata/empty.txt",
-				"testdata/list/empty_json.txt",
+				"testdata/list/json_empty.txt",
 			},
 			true,
 		},
