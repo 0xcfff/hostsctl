@@ -23,6 +23,7 @@ func TestIpListCommand(t *testing.T) {
 		args args
 		want bool
 	}{
+		// default
 		{
 			"default empty",
 			args{
