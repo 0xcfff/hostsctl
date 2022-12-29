@@ -1,2 +1,2 @@
-GRP  SYS  HOSTNAME   IP
-[1]  +    localhost  127.0.0.1
+GRP  SYS  IP         ALIAS
+[1]  +    127.0.0.1  localhost

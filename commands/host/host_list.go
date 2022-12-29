@@ -132,7 +132,7 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 
 		if !opt.noHeaders {
 			// columns := []string{"IP", "HOSTNAME", "GROUP", "COMMENT"}
-			columns := []string{"GRP", "SYS", "HOSTNAME", "IP"}
+			columns := []string{"GRP", "SYS", "IP", "ALIAS"}
 			visible := getVisibleValues(opt, columns)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
 			fmt.Fprintln(w)
@@ -162,7 +162,7 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 				sys = "*"
 			}
 
-			values := []string{grp, sys, strings.Join(ip.Hosts, ", "), ip.IP} // ip.Group, ip.Comment
+			values := []string{grp, sys, ip.IP, strings.Join(ip.Hosts, ", ")} // ip.Group, ip.Comment
 
 			visible := getVisibleValues(opt, values)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
