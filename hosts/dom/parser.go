@@ -1,7 +1,6 @@
 package dom
 
 import (
-	"io"
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
@@ -27,15 +26,6 @@ type parserContext struct {
 	blanksList       []*syntax.EmptyLine
 	ipsList          []syntax.Element
 	unrecognizedList []syntax.Element
-}
-
-func Parse(r io.Reader) (*Document, error) {
-	sdoc, err := syntax.Parse(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return parse(sdoc), nil
 }
 
 func parse(doc *syntax.Document) *Document {

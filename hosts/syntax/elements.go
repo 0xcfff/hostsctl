@@ -1,5 +1,10 @@
 package syntax
 
+import (
+	"fmt"
+	"strings"
+)
+
 type ElementType int
 
 const (
@@ -12,24 +17,25 @@ const (
 // Shared syntax element interface
 type Element interface {
 	Type() ElementType
-	HasOriginalText() bool
 	OriginalLineIndex() int
-	OriginalLineText() string
+	HasPreformattedText() bool
+	PreformattedLineText() string
+	formatLine() string
 }
 
 // Base syntax element functionality
 type elementBase struct {
-	originalLineText  *string
-	originalLineIndex int
+	preformattedLineText *string
+	originalLineIndex    int
 }
 
 // Returns true if the element has original text
-func (el *elementBase) HasOriginalText() bool {
-	return el.originalLineText != nil
+func (el *elementBase) HasPreformattedText() bool {
+	return el.preformattedLineText != nil
 }
 
-func (el *elementBase) OriginalLineText() string {
-	return *el.originalLineText
+func (el *elementBase) PreformattedLineText() string {
+	return *el.preformattedLineText
 }
 
 func (el *elementBase) OriginalLineIndex() int {
@@ -50,12 +56,20 @@ func (el *CommentLine) CommentText() string {
 	return el.commentText
 }
 
+func (el *CommentLine) formatLine() string {
+	return fmt.Sprintf("# %v", el.commentText)
+}
+
 type UnrecognizedLine struct {
 	elementBase
 }
 
 func (*UnrecognizedLine) Type() ElementType {
 	return Unknown
+}
+
+func (*UnrecognizedLine) formatLine() string {
+	panic("automated formatting is not supported")
 }
 
 // Represents an empty line
@@ -65,6 +79,10 @@ type EmptyLine struct {
 
 func (*EmptyLine) Type() ElementType {
 	return Empty
+}
+
+func (*EmptyLine) formatLine() string {
+	return ""
 }
 
 // Represents a line of IP to domain name mapping
@@ -89,4 +107,20 @@ func (el *IPMappingLine) DomainNames() []string {
 
 func (el *IPMappingLine) CommentText() string {
 	return el.commentText
+}
+
+func (el *IPMappingLine) formatLine() string {
+	b := strings.Builder{}
+	b.WriteString(el.ip)
+	b.WriteString(" ")
+
+	idx := 0
+
+	for _, ip := range el.domainNames {
+		if idx > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(ip)
+	}
+	return b.String()
 }

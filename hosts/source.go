@@ -57,7 +57,7 @@ func (src *Source) Load() (*dom.Document, error) {
 
 	defer f.Close()
 
-	doc, err := dom.Parse(f)
+	doc, err := dom.Read(f)
 	if err != nil {
 		return nil, fmt.Errorf("Can't parse hosts file %s, %w", src.Path(), err)
 	}

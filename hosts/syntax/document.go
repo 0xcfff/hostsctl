@@ -9,3 +9,14 @@ func (doc *Document) Elements() []Element {
 	copy(elements, doc.elements)
 	return elements
 }
+
+// Creates new documen based on the passed data
+func NewDocument(elements []Element) *Document {
+	content := elements
+	if elements == nil {
+		content = make([]Element, 0)
+	}
+	return &Document{
+		elements: content,
+	}
+}

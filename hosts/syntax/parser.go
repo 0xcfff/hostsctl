@@ -9,8 +9,8 @@ import (
 	"github.com/0xcfff/hostsctl/iptools"
 )
 
-// Parses the content and returns parsed document
-func Parse(r io.Reader) (*Document, error) {
+// Main intry point into syntax parsing process
+func parse(r io.Reader) (*Document, error) {
 	s := bufio.NewScanner(r)
 	s.Split(createLinesSplitterFunc())
 	els, err := parseLines(s)
@@ -22,6 +22,7 @@ func Parse(r io.Reader) (*Document, error) {
 	}
 	return &doc, nil
 }
+
 
 func parseLines(s *bufio.Scanner) ([]Element, error) {
 	elements := make([]Element, 0)
@@ -47,8 +48,8 @@ func parseLines(s *bufio.Scanner) ([]Element, error) {
 func parseLine(idx int, l string) (Element, error) {
 	tl := strings.TrimSpace(l)
 	elb := elementBase{
-		originalLineIndex: idx,
-		originalLineText:  &l,
+		originalLineIndex:    idx,
+		preformattedLineText: &l,
 	}
 
 	if len(tl) == 0 {

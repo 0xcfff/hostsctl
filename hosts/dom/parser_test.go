@@ -11,7 +11,7 @@ import (
 func Test_parse(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		content := ""
-		syndoc, _ := syntax.Parse(strings.NewReader(content))
+		syndoc, _ := syntax.Read(strings.NewReader(content))
 		doc := parse(syndoc)
 
 		assert.Equal(t, syndoc, doc.originalDocument)
@@ -19,7 +19,7 @@ func Test_parse(t *testing.T) {
 	})
 	t.Run("ip only", func(t *testing.T) {
 		content := "127.0.0.1 localhost"
-		syndoc, _ := syntax.Parse(strings.NewReader(content))
+		syndoc, _ := syntax.Read(strings.NewReader(content))
 		doc := parse(syndoc)
 
 		assert.Equal(t, syndoc, doc.originalDocument)
@@ -29,7 +29,7 @@ func Test_parse(t *testing.T) {
 	t.Run("named ip block only", func(t *testing.T) {
 		content := `# system ips
 127.0.0.1 localhost`
-		syndoc, _ := syntax.Parse(strings.NewReader(content))
+		syndoc, _ := syntax.Read(strings.NewReader(content))
 		doc := parse(syndoc)
 
 		assert.Equal(t, syndoc, doc.originalDocument)
