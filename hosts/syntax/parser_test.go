@@ -7,12 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParse(t *testing.T) {
+func Test_parse(t *testing.T) {
 	t.Run("empty file", func(t *testing.T) {
 		content := []byte("")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -23,7 +23,7 @@ func TestParse(t *testing.T) {
 		content := []byte("\n")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -36,7 +36,7 @@ func TestParse(t *testing.T) {
 		content := []byte("  \n   ")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -57,7 +57,7 @@ func TestParse(t *testing.T) {
 		content := []byte("127.0.0.1 localhost")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -73,7 +73,7 @@ func TestParse(t *testing.T) {
 		content := []byte("127.0.0.1 localhost # my own IP")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -90,7 +90,7 @@ func TestParse(t *testing.T) {
 		content := []byte("fe00::0 ip6-localnet")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -106,7 +106,7 @@ func TestParse(t *testing.T) {
 		content := []byte("::1     ip6-localhost ip6-loopback")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -123,7 +123,7 @@ func TestParse(t *testing.T) {
 		content := []byte("12a.0.0.1 localhost")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -137,7 +137,7 @@ func TestParse(t *testing.T) {
 		content := []byte(":t:1     ip6-localhost")
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
@@ -157,7 +157,7 @@ func TestParse(t *testing.T) {
 `)
 		reader := bytes.NewReader(content)
 
-		doc, err := Read(reader)
+		doc, err := parse(reader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, doc)
