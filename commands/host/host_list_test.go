@@ -51,6 +51,90 @@ func TestHostListCommand(t *testing.T) {
 			},
 			true,
 		},
+		// short
+		{
+			"plain empty",
+			args{
+				[]string{"-o", "short"},
+				"testdata/empty.txt",
+				"testdata/list/short_empty.txt",
+			},
+			true,
+		},
+		{
+			"plain one line",
+			args{
+				[]string{"-o", "short"},
+				"testdata/one-ip.txt",
+				"testdata/list/short_one-ip.txt",
+			},
+			true,
+		},
+		{
+			"plain two blocks",
+			args{
+				[]string{"-o", "short"},
+				"testdata/two-sys-blocks.txt",
+				"testdata/list/short_two-sys-blocks.txt",
+			},
+			true,
+		},
+		// wide
+		{
+			"wide empty",
+			args{
+				[]string{"-o", "wide"},
+				"testdata/empty.txt",
+				"testdata/list/wide_empty.txt",
+			},
+			true,
+		},
+		{
+			"wide one line",
+			args{
+				[]string{"-o", "wide"},
+				"testdata/one-ip.txt",
+				"testdata/list/wide_one-ip.txt",
+			},
+			true,
+		},
+		{
+			"wide two blocks",
+			args{
+				[]string{"-o", "wide"},
+				"testdata/two-sys-blocks.txt",
+				"testdata/list/wide_two-sys-blocks.txt",
+			},
+			true,
+		},
+		// plain
+		{
+			"plain empty",
+			args{
+				[]string{"-o", "plain"},
+				"testdata/empty.txt",
+				"testdata/list/plain_empty.txt",
+			},
+			true,
+		},
+		{
+			"plain one line",
+			args{
+				[]string{"-o", "plain"},
+				"testdata/one-ip.txt",
+				"testdata/list/plain_one-ip.txt",
+			},
+			true,
+		},
+		{
+			"plain two blocks",
+			args{
+				[]string{"-o", "plain"},
+				"testdata/two-sys-blocks.txt",
+				"testdata/list/plain_two-sys-blocks.txt",
+			},
+			true,
+		},
 		// json set of tests
 		{
 			"json empty",

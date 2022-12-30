@@ -217,7 +217,7 @@ func getVisibleValues(opt *IpListOptions, values []string) []string {
 	case fmtText:
 		return values[:4]
 	case fmtShort:
-		return values[2:3]
+		return values[2:4]
 	case fmtWide:
 		return values
 	default:

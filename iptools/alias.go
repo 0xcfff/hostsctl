@@ -15,7 +15,6 @@ var (
 		{net.IPv4(127, 0, 0, 1), "localhost"},
 		{net.ParseIP("::1"), "ip6-localhost"},
 		{net.ParseIP("::1"), "ip6-loopback"},
-		{net.ParseIP("fe00::0"), "ip6-localnet"},
 	}
 )
 
