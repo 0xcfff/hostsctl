@@ -1,6 +1,8 @@
 package dom
 
 import (
+	"strings"
+
 	"github.com/0xcfff/hostsctl/hosts/syntax"
 )
 
@@ -67,12 +69,41 @@ func (blk *BlanksBlock) LinesCount() int {
 
 // Block of IPs
 type IPListBlock struct {
-	header []*syntax.CommentLine
-	body   []syntax.Element
+	header  []*syntax.CommentLine
+	body    []syntax.Element
+	id      int
+	name    string
+	comment []string
 }
 
 func (blk *IPListBlock) Type() BlockType {
 	return IPList
+}
+
+func (blk *IPListBlock) Id() int {
+	return blk.id
+}
+func (blk *IPListBlock) Name() string {
+	return blk.name
+}
+func (blk *IPListBlock) CommentLines() []string {
+	lines := make([]string, 0, len(blk.comment))
+	lines = append(lines, blk.comment...)
+	return lines
+}
+
+func (blk *IPListBlock) CommentText() string {
+	sb := &strings.Builder{}
+	first := true
+	for _, s := range blk.comment {
+		if first {
+			first = false
+		} else {
+			sb.WriteString("\n")
+		}
+		sb.WriteString(s)
+	}
+	return sb.String()
 }
 
 func (blk *IPListBlock) HasHeader() bool {

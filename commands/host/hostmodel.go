@@ -1,7 +1,6 @@
 package host
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/dom"
@@ -10,15 +9,16 @@ import (
 )
 
 type HostModel struct {
-	IP      string   `json:"ip"`
-	Hosts   []string `json:"hosts"`
-	Comment string   `json:"comment,omitempty"`
-	Group   string   `json:"group,omitempty"`
+	IP      string         `json:"ip"`
+	Hosts   []string       `json:"hosts"`
+	Comment string         `json:"comment,omitempty"`
+	Group   HostGroupModel `json:"group,omitempty"`
 }
 
 type HostGroupModel struct {
-	Name string      `json:"name"`
-	IPs  []HostModel `json:"ips"`
+	Id      int    `json:"id"`
+	Name    string `json:"name"`
+	Comment string `json:"comment"`
 }
 
 type IPGrouping int
@@ -32,33 +32,36 @@ const (
 func NewHostModels(doc *dom.Document, grouping IPGrouping) []*HostModel {
 	var result []*HostModel = make([]*HostModel, 0)
 
-	ipsBlockIdx := 0
 	for _, block := range doc.Blocks() {
 		if block.Type() == dom.IPList {
 			ipsBlock := block.(*dom.IPListBlock)
-			blockName := fmt.Sprintf("TBD group %v", ipsBlockIdx)
-			result = append(result, convertIPs(ipsBlock, blockName, grouping)...)
-			ipsBlockIdx += 1
+			result = append(result, convertIPs(ipsBlock, grouping)...)
 		}
 	}
 	return result
 }
 
-func convertIPs(ips *dom.IPListBlock, source string, grouping IPGrouping) []*HostModel {
+func convertIPs(ips *dom.IPListBlock, grouping IPGrouping) []*HostModel {
 	switch grouping {
 	case GrpUngroup:
-		return ungroupAndConvert(ips, source)
+		return ungroupAndConvert(ips)
 	case GrpGroup:
-		return groupAndConvert(ips, source)
+		return groupAndConvert(ips)
 	case GrpOriginal:
-		return convertOnly(ips, source)
+		return convertOnly(ips)
 	default:
 		panic("unknown grouping specified")
 	}
 }
 
-func ungroupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
+func ungroupAndConvert(ips *dom.IPListBlock) []*HostModel {
 	result := make([]*HostModel, 0)
+
+	group := HostGroupModel{
+		Id:      ips.Id(),
+		Name:    ips.Name(),
+		Comment: ips.CommentText(),
+	}
 
 	for _, r := range ips.BodyElements() {
 		if r.Type() == syntax.IPMapping {
@@ -68,7 +71,7 @@ func ungroupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
 					IP:      rr.IPAddress(),
 					Hosts:   []string{al},
 					Comment: rr.CommentText(),
-					Group:   source,
+					Group:   group,
 				}
 				result = append(result, ip)
 			}
@@ -77,10 +80,16 @@ func ungroupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
 	return result
 }
 
-func groupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
+func groupAndConvert(ips *dom.IPListBlock) []*HostModel {
 	result := make([]*HostModel, 0)
 	ipsMap := make(map[string]*HostModel)
 	ipsComments := make(map[string][]string)
+
+	group := HostGroupModel{
+		Id:      ips.Id(),
+		Name:    ips.Name(),
+		Comment: ips.CommentText(),
+	}
 
 	for _, r := range ips.BodyElements() {
 		if r.Type() == syntax.IPMapping {
@@ -89,7 +98,7 @@ func groupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
 			if !ok {
 				ip := &HostModel{
 					IP:      rr.IPAddress(),
-					Group:   source,
+					Group:   group,
 					Comment: rr.CommentText(),
 				}
 				result = append(result, ip)
@@ -114,8 +123,14 @@ func groupAndConvert(ips *dom.IPListBlock, source string) []*HostModel {
 	return result
 }
 
-func convertOnly(ips *dom.IPListBlock, source string) []*HostModel {
+func convertOnly(ips *dom.IPListBlock) []*HostModel {
 	result := make([]*HostModel, 0)
+
+	group := HostGroupModel{
+		Id:      ips.Id(),
+		Name:    ips.Name(),
+		Comment: ips.CommentText(),
+	}
 
 	for _, r := range ips.BodyElements() {
 		if r.Type() == syntax.IPMapping {
@@ -124,7 +139,7 @@ func convertOnly(ips *dom.IPListBlock, source string) []*HostModel {
 				IP:      rr.IPAddress(),
 				Comment: rr.CommentText(),
 				Hosts:   rr.DomainNames(),
-				Group:   source,
+				Group:   group,
 			}
 			result = append(result, ip)
 		}

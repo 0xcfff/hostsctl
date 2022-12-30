@@ -1,10 +1,13 @@
 package dom
 
 import (
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
 	"github.com/0xcfff/hostsctl/iptools"
+	"golang.org/x/exp/slices"
 )
 
 type parsingState int
@@ -15,6 +18,10 @@ const (
 	whitespaces
 	comments
 	ips
+)
+
+var (
+	rxBlockId = regexp.MustCompile(`^\s*\[\s*(\d+|\*)\s*\]`)
 )
 
 type parserContext struct {
@@ -51,16 +58,12 @@ func (ctx *parserContext) startNewBlock(el syntax.Element) {
 	switch el.Type() {
 	case syntax.Unknown:
 		ctx.state = unrecognized
-		break
 	case syntax.Comment:
 		ctx.state = comments
-		break
 	case syntax.IPMapping:
 		ctx.state = ips
-		break
 	case syntax.Empty:
 		ctx.state = whitespaces
-		break
 	default:
 		panic("Unknown block type")
 	}
@@ -128,33 +131,105 @@ func (ctx *parserContext) finishBlock() {
 		}
 		ctx.recognizedBlocks = append(ctx.recognizedBlocks, &block)
 		ctx.blanksList = make([]*syntax.EmptyLine, 0)
-		break
 	case comments:
 		block := CommentsBlock{
 			comments: ctx.commentsList,
 		}
 		ctx.recognizedBlocks = append(ctx.recognizedBlocks, &block)
 		ctx.commentsList = make([]*syntax.CommentLine, 0)
-		break
 	case ips:
 		block := IPListBlock{
 			header: ctx.commentsList,
 			body:   ctx.ipsList,
 		}
+		parseNFillIPsBlockValues(ctx, &block)
 		ctx.recognizedBlocks = append(ctx.recognizedBlocks, &block)
 		ctx.commentsList = make([]*syntax.CommentLine, 0)
 		ctx.ipsList = make([]syntax.Element, 0)
-		break
 	case unrecognized:
 		block := UnrecognizedBlock{
 			lines: ctx.unrecognizedList,
 		}
 		ctx.recognizedBlocks = append(ctx.recognizedBlocks, &block)
 		ctx.unrecognizedList = make([]syntax.Element, 0)
-		break
 	default:
 		panic("Unknown block type")
 	}
+}
+
+func parseNFillIPsBlockValues(ctx *parserContext, block *IPListBlock) {
+
+	const idNotSet = -1
+	var blockId int = idNotSet
+	var blockName string
+	var blockComment []string
+
+	if len(block.header) > 0 {
+		headerLine := block.header[0].CommentText()
+
+		// try extract block ID
+		matches := rxBlockId.FindAllStringSubmatch(headerLine, -1)
+		if matches != nil {
+			match := matches[0]
+			fullstr := match[0]
+			idstr := match[1]
+			if idstr == "*" {
+				blockId = idNotSet
+			} else {
+				var err error
+				blockId, err = strconv.Atoi(idstr)
+				if err != nil {
+					blockId = idNotSet
+				}
+			}
+			headerLine = strings.TrimSpace(headerLine[len(fullstr):])
+		}
+
+		// try extract block name
+		parts := strings.Fields(headerLine)
+		if len(parts) == 1 {
+			blockName = parts[0]
+			headerLine = ""
+		} else if len(parts) > 1 {
+			dividers := []string{"-", ":", "|", "*", "#"}
+			div := parts[1]
+			if slices.Contains(dividers, div) {
+				blockName = parts[0]
+				noName := headerLine[len(blockName):]
+				divIdx := strings.Index(noName, div)
+				headerLine = strings.TrimSpace(noName[divIdx+len(div):])
+			}
+		}
+
+		blockComment = append(blockComment, headerLine)
+		for _, line := range block.header[1:] {
+			blockComment = append(blockComment, line.CommentText())
+		}
+	}
+
+	if blockId == idNotSet {
+		blockId = 1
+		for {
+			found := true
+			for _, b := range ctx.recognizedBlocks {
+				if b.Type() == IPList {
+					bb := b.(*IPListBlock)
+					if bb.id == blockId {
+						found = false
+						break
+					}
+				}
+			}
+			if found {
+				break
+			}
+			blockId += 1
+		}
+	}
+
+	block.id = blockId
+	block.name = blockName
+	block.comment = blockComment
 }
 
 func newParseContext() parserContext {

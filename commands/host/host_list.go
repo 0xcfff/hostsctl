@@ -143,8 +143,8 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 
 		for _, ip := range m {
 			grp := ""
-			if prev == nil || prev.Group != ip.Group {
-				grpId += 1
+			if prev == nil || prev.Group.Id != ip.Group.Id {
+				grpId = ip.Group.Id
 				grp = fmt.Sprintf("[%v]", grpId)
 			}
 

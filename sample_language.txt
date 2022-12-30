@@ -116,4 +116,61 @@ add ParseFlags to EtcHosts parsing logic
 
 
 
+######################
+Sample Output
 
+Add GRP and SYS columns to output
+GRP  SYS  IP          ALIAS
+[1]   +   127.0.0.1   localhost
+          127.0.0.2   router
+          127.0.0.3   printer
+[2]   +   ::1         ip6-localhost
+      +   ::1         ip6-loopback
+      +   e00::0      ip6-localnet
+      +   e00::0      ip6-mcastprefix
+      +   e00::0      ip6-allnodes
+      +   e00::0      ip6-allrouters
+[3]       10.0.0.101  hhost1
+          10.0.0.102  hhost2
+
+
+######################
+Sample Hosts Content
+
+127.0.0.1	localhost
+127.0.0.2	router
+127.0.0.3	printer
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+# [*] localnet - local home network
+10.0.0.101 hhost1
+10.0.0.102 hhost2
+
+
+######################
+Sample Hosts Content
+
+127.0.0.1	localhost
+127.0.0.2	router
+127.0.0.3	printer
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+# [ 101 ] prj1-dev local home network
+10.0.0.101 hhost1
+10.0.0.102 hhost2
+
+# [ 102 ] prj1-dev02 onprem setup
+10.0.0.101 hhost1
+10.0.0.102 hhost2

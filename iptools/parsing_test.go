@@ -1,6 +1,8 @@
 package iptools
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestIsIPv4(t *testing.T) {
 	type args struct {
