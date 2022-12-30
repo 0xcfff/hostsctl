@@ -22,7 +22,7 @@ const (
 	fmtText  outFormat = iota
 	fmtShort outFormat = iota
 	fmtWide  outFormat = iota
-	fmtRaw   outFormat = iota
+	fmtPlain outFormat = iota
 	fmtJson  outFormat = iota
 	fmtYaml  outFormat = iota
 )
@@ -33,7 +33,7 @@ var (
 		common.TfmtText: fmtText,
 		"short":         fmtShort,
 		"wide":          fmtWide,
-		"raw":           fmtRaw,
+		"plain":         fmtPlain,
 		common.TfmtJson: fmtJson,
 		common.TfmtYaml: fmtYaml,
 	}
@@ -42,20 +42,18 @@ var (
 		"":         GrpUngroup,
 		"orig":     GrpOriginal,
 		"original": GrpOriginal,
-		"combine":  GrpGroup,
+		"group":    GrpGroup,
 		"ungroup":  GrpUngroup,
 	}
 )
 
 type IpListOptions struct {
 	command        *cobra.Command
-	outputFormat   string
-	output         outFormat
-	outputGrouping string
-	grouping       IPGrouping
+	output         string
+	outputFormat   outFormat
+	grouping       string
+	outputGrouping IPGrouping
 	noHeaders      bool
-	noGroup        bool
-	noComments     bool
 }
 
 func NewCmdIpList() *cobra.Command {
@@ -73,10 +71,8 @@ func NewCmdIpList() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&opt.noHeaders, "no-headers", opt.noHeaders, "Disable printing headers")
-	cmd.Flags().BoolVar(&opt.noGroup, "no-group", opt.noGroup, "Do not show IP group")
-	cmd.Flags().BoolVar(&opt.noComments, "no-comments", opt.noComments, "Do not show comments")
-	cmd.Flags().StringVarP(&opt.outputFormat, "output", "o", opt.outputFormat, fmt.Sprintf("Output format. One of %s", strings.Join(maps.Keys(formats), ",")))
-	cmd.Flags().StringVarP(&opt.outputGrouping, "grouping", "g", opt.outputFormat, fmt.Sprintf("IPs grouping. One of %s", strings.Join(maps.Keys(groupings), ",")))
+	cmd.Flags().StringVarP(&opt.output, "output", "o", opt.output, fmt.Sprintf("Output format. One of %s", strings.Join(maps.Keys(formats), ",")))
+	cmd.Flags().StringVarP(&opt.grouping, "grouping", "g", opt.grouping, fmt.Sprintf("IPs grouping. One of %s", strings.Join(maps.Keys(groupings), ",")))
 
 	return cmd
 }
@@ -86,14 +82,14 @@ func (opt *IpListOptions) Complete(cmd *cobra.Command, args []string) error {
 	opt.command = cmd
 
 	var ok bool
-	opt.output, ok = formats[opt.outputFormat]
+	opt.outputFormat, ok = formats[opt.output]
 	if !ok {
-		return fmt.Errorf("--output %v of list command does not support specified output format", opt.outputFormat)
+		return fmt.Errorf("--output %v of list command does not support specified output format", opt.output)
 	}
 
-	opt.grouping, ok = groupings[opt.outputGrouping]
+	opt.outputGrouping, ok = groupings[opt.grouping]
 	if !ok {
-		return fmt.Errorf("--grouping %v of list command does not support specified value", opt.outputGrouping)
+		return fmt.Errorf("--grouping %v of list command does not support specified value", opt.grouping)
 	}
 
 	return nil
@@ -108,14 +104,14 @@ func (opt *IpListOptions) Execute() error {
 	c, err := src.Load()
 	cobra.CheckErr(err)
 
-	switch opt.output {
-	case fmtText:
+	switch opt.outputFormat {
+	case fmtText, fmtShort, fmtWide:
 		err = writeDataAsText(opt, c)
 	case fmtJson:
 		err = writeDataAsJson(opt, c)
 	case fmtYaml:
 		err = writeDataAsYaml(opt, c)
-	case fmtRaw:
+	case fmtPlain:
 		err = writeDataAsHosts(opt, c)
 	default:
 		panic("unknown output format")
@@ -126,13 +122,13 @@ func (opt *IpListOptions) Execute() error {
 }
 
 func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.grouping)
+	m := NewHostModels(data, opt.outputGrouping)
 
 	err := printutil.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 
 		if !opt.noHeaders {
 			// columns := []string{"IP", "HOSTNAME", "GROUP", "COMMENT"}
-			columns := []string{"GRP", "SYS", "IP", "ALIAS"}
+			columns := []string{"GRP", "SYS", "IP", "ALIAS", "COMMENT", "GROUP", "GROUP COMMENT"}
 			visible := getVisibleValues(opt, columns)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
 			fmt.Fprintln(w)
@@ -162,7 +158,12 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 				sys = "*"
 			}
 
-			values := []string{grp, sys, ip.IP, strings.Join(ip.Hosts, ", ")} // ip.Group, ip.Comment
+			gn := ip.Group.Name
+			if gn == "" {
+				gn = fmt.Sprint(ip.Group.Id)
+			}
+
+			values := []string{grp, sys, ip.IP, strings.Join(ip.Hosts, ", "), ip.Comment, gn, ip.Group.Comment}
 
 			visible := getVisibleValues(opt, values)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
@@ -176,15 +177,22 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 }
 
 func writeDataAsHosts(opt *IpListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.grouping)
+	m := NewHostModels(data, opt.outputGrouping)
 
-	panic("not implemented")
-	fmt.Println(m)
-	return nil
+	err := printutil.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
+		for _, ip := range m {
+
+			values := []string{ip.IP, strings.Join(ip.Hosts, ", ")}
+			fmt.Fprint(w, strings.Join(values, "\t"))
+			fmt.Fprintln(w)
+		}
+		return nil
+	})
+	return err
 }
 
 func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.grouping)
+	m := NewHostModels(data, opt.outputGrouping)
 	buff, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return err
@@ -194,7 +202,7 @@ func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
 }
 
 func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.grouping)
+	m := NewHostModels(data, opt.outputGrouping)
 	buff, err := yaml.Marshal(m)
 	if err != nil {
 		return err
@@ -204,16 +212,15 @@ func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
 }
 
 func getVisibleValues(opt *IpListOptions, values []string) []string {
-	// "IP", "HOSTNAME", "SOURCE", "COMMENT"
-	// "GRP", "SYS", "IP", "ALIAS"
-	if opt.noComments && opt.noGroup {
-		return values[:1]
+	// "GRP", "SYS", "IP", "ALIAS", "COMMENT", "GROUP", "GROUP COMMENT"
+	switch opt.outputFormat {
+	case fmtText:
+		return values[:4]
+	case fmtShort:
+		return values[2:3]
+	case fmtWide:
+		return values
+	default:
+		panic("unsupported formatting")
 	}
-	if opt.noComments {
-		return values[:2]
-	}
-	if opt.noGroup {
-		return []string{values[0], values[1], values[3]}
-	}
-	return values
 }

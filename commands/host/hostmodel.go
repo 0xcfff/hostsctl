@@ -96,7 +96,7 @@ func groupAndConvert(ips *dom.IPListBlock) []*HostModel {
 			rr := r.(*syntax.IPMappingLine)
 			ip, ok := ipsMap[rr.IPAddress()]
 			if !ok {
-				ip := &HostModel{
+				ip = &HostModel{
 					IP:      rr.IPAddress(),
 					Group:   group,
 					Comment: rr.CommentText(),
