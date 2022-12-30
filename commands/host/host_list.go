@@ -127,7 +127,6 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 	err := printutil.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 
 		if !opt.noHeaders {
-			// columns := []string{"IP", "HOSTNAME", "GROUP", "COMMENT"}
 			columns := []string{"GRP", "SYS", "IP", "ALIAS", "COMMENT", "GROUP", "GROUP COMMENT"}
 			visible := getVisibleValues(opt, columns)
 			fmt.Fprint(w, strings.Join(visible, "\t"))

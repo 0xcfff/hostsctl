@@ -9,16 +9,16 @@ import (
 )
 
 type HostModel struct {
-	IP      string         `json:"ip"`
-	Hosts   []string       `json:"hosts"`
-	Comment string         `json:"comment,omitempty"`
-	Group   HostGroupModel `json:"group,omitempty"`
+	IP      string         `json:"ip"                yaml:"ip"`
+	Hosts   []string       `json:"aliases"           yaml:"aliases"`
+	Comment string         `json:"comment,omitempty" yaml:"comment,omitempty"`
+	Group   HostGroupModel `json:"group,omitempty"   yaml:"group,omitempty"`
 }
 
 type HostGroupModel struct {
-	Id      int    `json:"id"`
-	Name    string `json:"name"`
-	Comment string `json:"comment"`
+	Id      int    `json:"id"             yaml:"id"`
+	Name    string `json:"name,omitempty" yaml:"name,omitempty"`
+	Comment string `json:"-"              yaml:"-"`
 }
 
 type IPGrouping int
