@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/hostsctl",
-            "args": ["host", "list"]
+            "args": ["host", "list", "-o", "yaml"]
         }
     ]
 }

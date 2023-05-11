@@ -60,7 +60,7 @@ func ungroupAndConvert(ips *dom.IPListBlock) []*HostModel {
 	group := HostGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
-		Comment: ips.CommentText(),
+		Comment: ips.Comment(),
 	}
 
 	for _, r := range ips.BodyElements() {
@@ -88,7 +88,7 @@ func groupAndConvert(ips *dom.IPListBlock) []*HostModel {
 	group := HostGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
-		Comment: ips.CommentText(),
+		Comment: ips.Comment(),
 	}
 
 	for _, r := range ips.BodyElements() {
@@ -129,7 +129,7 @@ func convertOnly(ips *dom.IPListBlock) []*HostModel {
 	group := HostGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
-		Comment: ips.CommentText(),
+		Comment: ips.Comment(),
 	}
 
 	for _, r := range ips.BodyElements() {

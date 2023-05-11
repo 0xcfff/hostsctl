@@ -86,13 +86,7 @@ func (blk *IPListBlock) Id() int {
 func (blk *IPListBlock) Name() string {
 	return blk.name
 }
-func (blk *IPListBlock) CommentLines() []string {
-	lines := make([]string, 0, len(blk.comment))
-	lines = append(lines, blk.comment...)
-	return lines
-}
-
-func (blk *IPListBlock) CommentText() string {
+func (blk *IPListBlock) Comment() string {
 	sb := &strings.Builder{}
 	first := true
 	for _, s := range blk.comment {
@@ -104,10 +98,6 @@ func (blk *IPListBlock) CommentText() string {
 		sb.WriteString(s)
 	}
 	return sb.String()
-}
-
-func (blk *IPListBlock) HasHeader() bool {
-	return len(blk.header) > 0
 }
 
 func (blk *IPListBlock) HeaderCommentLines() []string {

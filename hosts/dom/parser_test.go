@@ -41,7 +41,7 @@ func Test_parse(t *testing.T) {
 		assert.Equal(t, 1, len(b0.BodyElements()))
 		assert.Equal(t, 1, b0.Id())
 		assert.Equal(t, "", b0.Name())
-		assert.Equal(t, "system ips", b0.CommentLines()[0])
+		assert.Equal(t, "system ips", b0.Comment())
 	})
 	t.Run("properly named ip block only", func(t *testing.T) {
 		content := `# [101] proj-01 - system ips
@@ -58,6 +58,6 @@ func Test_parse(t *testing.T) {
 		assert.Equal(t, 1, len(b0.BodyElements()))
 		assert.Equal(t, 101, b0.Id())
 		assert.Equal(t, "proj-01", b0.Name())
-		assert.Equal(t, "system ips", b0.CommentLines()[0])
+		assert.Equal(t, "system ips", b0.Comment())
 	})
 }
