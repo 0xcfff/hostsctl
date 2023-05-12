@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
+	"github.com/0xcfff/hostsctl/iotools"
 )
 
 type BlockType int
@@ -17,6 +18,7 @@ const (
 
 type Block interface {
 	Type() BlockType
+	Dirty() bool
 }
 
 // Block of unrecognized lines
@@ -28,30 +30,13 @@ func (blk *UnrecognizedBlock) Type() BlockType {
 	return Unknown
 }
 
+func (blk *UnrecognizedBlock) Dirty() bool {
+	return false
+}
+
 func (blk *UnrecognizedBlock) BodyElements() []syntax.Element {
 	list := make([]syntax.Element, 0, len(blk.lines))
 	return list
-}
-
-// Sequence of comments
-type CommentsBlock struct {
-	comments []*syntax.CommentLine
-}
-
-func (blk *CommentsBlock) Type() BlockType {
-	return Comments
-}
-
-func (blk *CommentsBlock) LinesCount() int {
-	return len(blk.comments)
-}
-
-func (blk *CommentsBlock) CommentLines() []string {
-	lines := make([]string, 0, len(blk.comments))
-	for _, l := range blk.comments {
-		lines = append(lines, l.CommentText())
-	}
-	return lines
 }
 
 // Sequence of blank lines
@@ -61,6 +46,10 @@ type BlanksBlock struct {
 
 func (blk *BlanksBlock) Type() BlockType {
 	return Blanks
+}
+
+func (blk *BlanksBlock) Dirty() bool {
+	return false
 }
 
 func (blk *BlanksBlock) LinesCount() int {
@@ -74,10 +63,15 @@ type IPListBlock struct {
 	id      int
 	name    string
 	comment []string
+	dirty   bool
 }
 
 func (blk *IPListBlock) Type() BlockType {
 	return IPList
+}
+
+func (blk *IPListBlock) Dirty() bool {
+	return blk.dirty
 }
 
 func (blk *IPListBlock) Id() int {
@@ -87,13 +81,14 @@ func (blk *IPListBlock) Name() string {
 	return blk.name
 }
 func (blk *IPListBlock) Comment() string {
+	newLine := iotools.OSDependendNewLine()
 	sb := &strings.Builder{}
 	first := true
 	for _, s := range blk.comment {
 		if first {
 			first = false
 		} else {
-			sb.WriteString("\n")
+			sb.WriteString(newLine)
 		}
 		sb.WriteString(s)
 	}

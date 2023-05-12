@@ -9,8 +9,8 @@ import (
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
 	"github.com/0xcfff/hostsctl/hosts/dom"
+	"github.com/0xcfff/hostsctl/iotools"
 	"github.com/0xcfff/hostsctl/iptools"
-	"github.com/0xcfff/hostsctl/printutil"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
@@ -124,7 +124,7 @@ func (opt *IpListOptions) Execute() error {
 func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 	m := NewHostModels(data, opt.outputGrouping)
 
-	err := printutil.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
+	err := iotools.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 
 		if !opt.noHeaders {
 			columns := []string{"GRP", "SYS", "IP", "ALIAS", "COMMENT", "GROUP", "GROUP COMMENT"}
@@ -169,7 +169,6 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 			fmt.Fprintln(w)
 			prev = ip
 		}
-
 		return nil
 	})
 	return err
@@ -178,7 +177,7 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 func writeDataAsHosts(opt *IpListOptions, data *dom.Document) error {
 	m := NewHostModels(data, opt.outputGrouping)
 
-	err := printutil.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
+	err := iotools.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 		for _, ip := range m {
 
 			values := []string{ip.IP, strings.Join(ip.Hosts, ", ")}

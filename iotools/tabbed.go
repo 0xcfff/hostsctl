@@ -1,4 +1,4 @@
-package printutil
+package iotools
 
 import (
 	"bytes"

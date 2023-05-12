@@ -6,13 +6,14 @@ import (
 	"io"
 	"strings"
 
+	"github.com/0xcfff/hostsctl/iotools"
 	"github.com/0xcfff/hostsctl/iptools"
 )
 
 // Main intry point into syntax parsing process
 func parse(r io.Reader) (*Document, error) {
 	s := bufio.NewScanner(r)
-	s.Split(createLinesSplitterFunc())
+	s.Split(iotools.LinesSplitterRespectEndNewLineFunc())
 	els, err := parseLines(s)
 	if err != nil {
 		return nil, err
@@ -22,7 +23,6 @@ func parse(r io.Reader) (*Document, error) {
 	}
 	return &doc, nil
 }
-
 
 func parseLines(s *bufio.Scanner) ([]Element, error) {
 	elements := make([]Element, 0)
@@ -95,23 +95,4 @@ func parseLine(idx int, l string) (Element, error) {
 	return &UnrecognizedLine{
 		elementBase: elb,
 	}, nil
-}
-
-// Creates a split function which takes into account last newline
-// and returns an emply line if a file ends with new line char sequence
-func createLinesSplitterFunc() bufio.SplitFunc {
-
-	hadCr := false
-
-	ensureLastLineSplit := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		advance, token, err = bufio.ScanLines(data, atEOF)
-		if atEOF && advance == 0 && token == nil && hadCr {
-			hadCr = false
-			return 0, nil, bufio.ErrFinalToken
-		}
-		hadCr = len(token) != advance
-		return advance, token, err
-	}
-
-	return ensureLastLineSplit
 }

@@ -49,7 +49,7 @@ func formatAliases(ctx *formattingContext, block *IPListBlock) {
 }
 
 func formatComments(ctx *formattingContext, block *CommentsBlock) {
-	for _, el := range block.comments {
+	for _, el := range block.origComments {
 		// TODO: Add formatting to make sure newly added IPs are alligned with previously added ones
 		ctx.appendElement(el)
 	}

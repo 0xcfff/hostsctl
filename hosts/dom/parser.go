@@ -132,10 +132,8 @@ func (ctx *parserContext) finishBlock() {
 		ctx.recognizedBlocks = append(ctx.recognizedBlocks, &block)
 		ctx.blanksList = make([]*syntax.EmptyLine, 0)
 	case comments:
-		block := CommentsBlock{
-			comments: ctx.commentsList,
-		}
-		ctx.recognizedBlocks = append(ctx.recognizedBlocks, &block)
+		block := newCommentsBlockFromLines(ctx.commentsList)
+		ctx.recognizedBlocks = append(ctx.recognizedBlocks, block)
 		ctx.commentsList = make([]*syntax.CommentLine, 0)
 	case ips:
 		block := IPListBlock{
