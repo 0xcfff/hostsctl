@@ -11,15 +11,14 @@ import (
 type CommentsBlock struct {
 	origComments []*syntax.CommentLine
 	commentsText string
-	dirty        bool
 }
 
 func (blk *CommentsBlock) Type() BlockType {
 	return Comments
 }
 
-func (blk *CommentsBlock) Dirty() bool {
-	return blk.dirty
+func (blk *CommentsBlock) dirty() bool {
+	return blk.origComments == nil
 }
 
 func (blk *CommentsBlock) CommentsText() string {
@@ -29,7 +28,7 @@ func (blk *CommentsBlock) CommentsText() string {
 func (blk *CommentsBlock) SetCommentsText(commentsText string) {
 	if strings.Compare(blk.commentsText, commentsText) != 0 {
 		blk.commentsText = commentsText
-		blk.dirty = true
+		blk.origComments = nil
 	}
 }
 
@@ -37,7 +36,6 @@ func (blk *CommentsBlock) SetCommentsText(commentsText string) {
 func NewCommentsBlock(commentsText string) *CommentsBlock {
 	blk := &CommentsBlock{
 		commentsText: commentsText,
-		dirty:        true,
 	}
 	return blk
 }
@@ -59,7 +57,6 @@ func newCommentsBlockFromLines(comments []*syntax.CommentLine) *CommentsBlock {
 	blk := &CommentsBlock{
 		origComments: comments,
 		commentsText: sb.String(),
-		dirty:        false,
 	}
 
 	return blk

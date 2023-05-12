@@ -18,7 +18,7 @@ const (
 
 type Block interface {
 	Type() BlockType
-	Dirty() bool
+	dirty() bool
 }
 
 // Block of unrecognized lines
@@ -30,7 +30,7 @@ func (blk *UnrecognizedBlock) Type() BlockType {
 	return Unknown
 }
 
-func (blk *UnrecognizedBlock) Dirty() bool {
+func (blk *UnrecognizedBlock) dirty() bool {
 	return false
 }
 
@@ -48,7 +48,7 @@ func (blk *BlanksBlock) Type() BlockType {
 	return Blanks
 }
 
-func (blk *BlanksBlock) Dirty() bool {
+func (blk *BlanksBlock) dirty() bool {
 	return false
 }
 
@@ -63,15 +63,15 @@ type IPListBlock struct {
 	id      int
 	name    string
 	comment []string
-	dirty   bool
+	changed bool
 }
 
 func (blk *IPListBlock) Type() BlockType {
 	return IPList
 }
 
-func (blk *IPListBlock) Dirty() bool {
-	return blk.dirty
+func (blk *IPListBlock) dirty() bool {
+	return blk.changed
 }
 
 func (blk *IPListBlock) Id() int {
