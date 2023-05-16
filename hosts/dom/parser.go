@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
+	"github.com/0xcfff/hostsctl/iotools"
 	"github.com/0xcfff/hostsctl/iptools"
 	"golang.org/x/exp/slices"
 )
@@ -157,10 +158,10 @@ func (ctx *parserContext) finishBlock() {
 
 func parseNFillIPsBlockValues(ctx *parserContext, block *IPListBlock) {
 
-	const idNotSet = -1
 	var blockId int = idNotSet
+	var autoBlockId int = idNotSet
 	var blockName string
-	var blockComment []string
+	var commentsText string
 
 	if len(block.header) > 0 {
 		headerLine := block.header[0].CommentText()
@@ -199,20 +200,35 @@ func parseNFillIPsBlockValues(ctx *parserContext, block *IPListBlock) {
 			}
 		}
 
+		var blockComment []string
 		blockComment = append(blockComment, headerLine)
 		for _, line := range block.header[1:] {
 			blockComment = append(blockComment, line.CommentText())
 		}
+
+		// Construct comment text
+		newLine := iotools.OSDependendNewLine()
+		sb := &strings.Builder{}
+		first := true
+		for _, s := range blockComment {
+			if first {
+				first = false
+			} else {
+				sb.WriteString(newLine)
+			}
+			sb.WriteString(s)
+		}
+		commentsText = sb.String()
 	}
 
 	if blockId == idNotSet {
-		blockId = 1
+		autoBlockId = 1
 		for {
 			found := true
 			for _, b := range ctx.recognizedBlocks {
 				if b.Type() == IPList {
 					bb := b.(*IPListBlock)
-					if bb.id == blockId {
+					if bb.Id() == autoBlockId {
 						found = false
 						break
 					}
@@ -221,13 +237,14 @@ func parseNFillIPsBlockValues(ctx *parserContext, block *IPListBlock) {
 			if found {
 				break
 			}
-			blockId += 1
+			autoBlockId += 1
 		}
 	}
 
 	block.id = blockId
+	block.autoId = autoBlockId
 	block.name = blockName
-	block.comment = blockComment
+	block.commentsText = commentsText
 }
 
 func newParseContext() parserContext {
