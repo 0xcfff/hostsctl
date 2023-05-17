@@ -1,31 +1,36 @@
 package dom
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/0xcfff/hostsctl/hosts/syntax"
+	"github.com/0xcfff/hostsctl/iotools"
+	"golang.org/x/exp/slices"
 )
 
 const idNotSet = -1
 
 // Block of IPs
-type IPListBlock struct {
-	header       []*syntax.CommentLine
-	body         []syntax.Element
-	id           int
-	autoId       int
-	name         string
-	commentsText string
-	changed      bool
+type IPAliasesBlock struct {
+	origHeader []*syntax.CommentLine
+	id         int
+	autoId     int
+	name       string
+	note       string
+	entries    []*IPAliasesLine
+	changed    bool
 }
 
-func (blk *IPListBlock) Type() BlockType {
+func (blk *IPAliasesBlock) Type() BlockType {
 	return IPList
 }
 
-func (blk *IPListBlock) dirty() bool {
+func (blk *IPAliasesBlock) dirty() bool {
 	return blk.changed
 }
 
-func (blk *IPListBlock) Id() int {
+func (blk *IPAliasesBlock) Id() int {
 	result := blk.id
 	if blk.id == idNotSet {
 		result = blk.autoId
@@ -33,40 +38,133 @@ func (blk *IPListBlock) Id() int {
 	return result
 }
 
-func (blk *IPListBlock) SetId(id int) {
+func (blk *IPAliasesBlock) SetId(id int) {
 	blk.id = id
-	blk.header = nil
+	blk.origHeader = nil
 	blk.changed = true
 }
 
 // Returns true if real ID value is set,
 // otherwise if ID is auto generated, then returns false
-func (blk *IPListBlock) IdSet() bool {
+func (blk *IPAliasesBlock) IdSet() bool {
 	return blk.id <= idNotSet
 }
 
-func (blk *IPListBlock) Name() string {
+func (blk *IPAliasesBlock) Name() string {
 	return blk.name
 }
 
-func (blk *IPListBlock) SetName(name string) {
+func (blk *IPAliasesBlock) SetName(name string) {
 	blk.name = name
-	blk.header = nil
+	blk.origHeader = nil
 	blk.changed = true
 }
 
-func (blk *IPListBlock) Comment() string {
-	return blk.commentsText
+func (blk *IPAliasesBlock) Note() string {
+	return blk.note
 }
 
-func (blk *IPListBlock) SetComment(comment string) {
-	blk.commentsText = comment
-	blk.header = nil
+func (blk *IPAliasesBlock) SetNote(comment string) {
+	blk.note = comment
+	blk.origHeader = nil
 	blk.changed = true
 }
 
-func (blk *IPListBlock) BodyElements() []syntax.Element {
-	list := make([]syntax.Element, len(blk.body))
-	copy(list, blk.body)
-	return list
+func (blk *IPAliasesBlock) Entries() []*IPAliasesLine {
+	return slices.Clone(blk.entries)
+}
+
+func newIPAliasesBlockFromElements(headerElements []*syntax.CommentLine, bodyElements []syntax.Element, autoId int) *IPAliasesBlock {
+	block := &IPAliasesBlock{
+		origHeader: headerElements,
+	}
+	parseNFillIPsBlockHeader(block, autoId)
+	fillIPsBlockBody(block, bodyElements)
+	return block
+}
+
+func parseNFillIPsBlockHeader(block *IPAliasesBlock, autoId int) {
+
+	var blockId int = idNotSet
+	var autoBlockId int = idNotSet
+	var blockName string
+	var commentsText string
+
+	if len(block.origHeader) > 0 {
+		headerLine := block.origHeader[0].CommentText()
+
+		// try extract block ID
+		matches := rxBlockId.FindAllStringSubmatch(headerLine, -1)
+		if matches != nil {
+			match := matches[0]
+			fullstr := match[0]
+			idstr := match[1]
+			if idstr == "*" {
+				blockId = idNotSet
+			} else {
+				var err error
+				blockId, err = strconv.Atoi(idstr)
+				if err != nil {
+					blockId = idNotSet
+				}
+			}
+			headerLine = strings.TrimSpace(headerLine[len(fullstr):])
+		}
+
+		// try extract block name
+		parts := strings.Fields(headerLine)
+		if len(parts) == 1 {
+			blockName = parts[0]
+			headerLine = ""
+		} else if len(parts) > 1 {
+			dividers := []string{"-", ":", "|", "*", "#"}
+			div := parts[1]
+			if slices.Contains(dividers, div) {
+				blockName = parts[0]
+				noName := headerLine[len(blockName):]
+				divIdx := strings.Index(noName, div)
+				headerLine = strings.TrimSpace(noName[divIdx+len(div):])
+			}
+		}
+
+		var blockComment []string
+		blockComment = append(blockComment, headerLine)
+		for _, line := range block.origHeader[1:] {
+			blockComment = append(blockComment, line.CommentText())
+		}
+
+		// Construct comment text
+		newLine := iotools.OSDependendNewLine()
+		sb := &strings.Builder{}
+		first := true
+		for _, s := range blockComment {
+			if first {
+				first = false
+			} else {
+				sb.WriteString(newLine)
+			}
+			sb.WriteString(s)
+		}
+		commentsText = sb.String()
+	}
+
+	if blockId == idNotSet {
+		autoBlockId = autoId
+	}
+
+	block.id = blockId
+	block.autoId = autoBlockId
+	block.name = blockName
+	block.note = commentsText
+}
+
+func fillIPsBlockBody(block *IPAliasesBlock, bodyElements []syntax.Element) {
+	entries := make([]*IPAliasesLine, 0)
+	if len(bodyElements) > 0 {
+		for _, el := range bodyElements {
+			item := newIPMappingFromElement(el)
+			entries = append(entries, item)
+		}
+	}
+	block.entries = entries
 }

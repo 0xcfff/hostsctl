@@ -23,15 +23,15 @@ func (doc *Document) Blocks() []Block {
 }
 
 // Finds IPs block by ID
-func (doc *Document) IPsBlockById(id int) *IPListBlock {
-	predicate := func(b *IPListBlock) bool { return b.Id() == id }
+func (doc *Document) IPsBlockById(id int) *IPAliasesBlock {
+	predicate := func(b *IPAliasesBlock) bool { return b.Id() == id }
 	return findBlockByPredicate(doc.blocks, predicate)
 }
 
 // Finds IPs block by name
-func (doc *Document) IPsBlockByName(name string) *IPListBlock {
-	predicateCS := func(b *IPListBlock) bool { return strings.Compare(b.Name(), name) == 0 }
-	predicateCI := func(b *IPListBlock) bool { return strings.EqualFold(b.Name(), name) }
+func (doc *Document) IPsBlockByName(name string) *IPAliasesBlock {
+	predicateCS := func(b *IPAliasesBlock) bool { return strings.Compare(b.Name(), name) == 0 }
+	predicateCI := func(b *IPAliasesBlock) bool { return strings.EqualFold(b.Name(), name) }
 	result := findBlockByPredicate(doc.blocks, predicateCS)
 	if result == nil {
 		result = findBlockByPredicate(doc.blocks, predicateCI)

@@ -22,7 +22,7 @@ func format(doc *Document) *syntax.Document {
 	for _, block := range doc.blocks {
 		switch block.Type() {
 		case IPList:
-			formatAliases(ctx, block.(*IPListBlock))
+			formatAliases(ctx, block.(*IPAliasesBlock))
 			break
 		case Comments:
 			formatComments(ctx, block.(*CommentsBlock))
@@ -39,12 +39,12 @@ func format(doc *Document) *syntax.Document {
 	return syntax.NewDocument(ctx.formattedElements)
 }
 
-func formatAliases(ctx *formattingContext, block *IPListBlock) {
-	for _, el := range block.header {
+func formatAliases(ctx *formattingContext, block *IPAliasesBlock) {
+	for _, el := range block.origHeader {
 		ctx.appendElement(el)
 	}
-	for _, el := range block.body {
-		ctx.appendElement(el)
+	for _, el := range block.entries {
+		ctx.appendElement(el.origElement)
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/dom"
-	"github.com/0xcfff/hostsctl/hosts/syntax"
 	"golang.org/x/exp/slices"
 )
 
@@ -34,14 +33,14 @@ func NewHostModels(doc *dom.Document, grouping IPGrouping) []*HostModel {
 
 	for _, block := range doc.Blocks() {
 		if block.Type() == dom.IPList {
-			ipsBlock := block.(*dom.IPListBlock)
+			ipsBlock := block.(*dom.IPAliasesBlock)
 			result = append(result, convertIPs(ipsBlock, grouping)...)
 		}
 	}
 	return result
 }
 
-func convertIPs(ips *dom.IPListBlock, grouping IPGrouping) []*HostModel {
+func convertIPs(ips *dom.IPAliasesBlock, grouping IPGrouping) []*HostModel {
 	switch grouping {
 	case GrpUngroup:
 		return ungroupAndConvert(ips)
@@ -54,33 +53,30 @@ func convertIPs(ips *dom.IPListBlock, grouping IPGrouping) []*HostModel {
 	}
 }
 
-func ungroupAndConvert(ips *dom.IPListBlock) []*HostModel {
+func ungroupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 	result := make([]*HostModel, 0)
 
 	group := HostGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
-		Comment: ips.Comment(),
+		Comment: ips.Note(),
 	}
 
-	for _, r := range ips.BodyElements() {
-		if r.Type() == syntax.IPMapping {
-			rr := r.(*syntax.IPMappingLine)
-			for _, al := range rr.DomainNames() {
-				ip := &HostModel{
-					IP:      rr.IPAddress(),
-					Hosts:   []string{al},
-					Comment: rr.CommentText(),
-					Group:   group,
-				}
-				result = append(result, ip)
+	for _, r := range ips.Entries() {
+		for _, al := range r.Aliases() {
+			ip := &HostModel{
+				IP:      r.IP(),
+				Hosts:   []string{al},
+				Comment: r.Note(),
+				Group:   group,
 			}
+			result = append(result, ip)
 		}
 	}
 	return result
 }
 
-func groupAndConvert(ips *dom.IPListBlock) []*HostModel {
+func groupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 	result := make([]*HostModel, 0)
 	ipsMap := make(map[string]*HostModel)
 	ipsComments := make(map[string][]string)
@@ -88,61 +84,55 @@ func groupAndConvert(ips *dom.IPListBlock) []*HostModel {
 	group := HostGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
-		Comment: ips.Comment(),
+		Comment: ips.Note(),
 	}
 
-	for _, r := range ips.BodyElements() {
-		if r.Type() == syntax.IPMapping {
-			rr := r.(*syntax.IPMappingLine)
-			ip, ok := ipsMap[rr.IPAddress()]
-			if !ok {
-				ip = &HostModel{
-					IP:      rr.IPAddress(),
-					Group:   group,
-					Comment: rr.CommentText(),
-				}
-				result = append(result, ip)
-				ipsMap[rr.IPAddress()] = ip
-
-				comments := make([]string, 0)
-				if rr.CommentText() != "" {
-					comments = append(comments, rr.CommentText())
-				}
-				ipsComments[rr.IPAddress()] = comments
+	for _, r := range ips.Entries() {
+		ip, ok := ipsMap[r.IP()]
+		if !ok {
+			ip = &HostModel{
+				IP:      r.IP(),
+				Group:   group,
+				Comment: r.Note(),
 			}
-			ip.Hosts = append(ip.Hosts, rr.DomainNames()...)
+			result = append(result, ip)
+			ipsMap[r.IP()] = ip
 
-			comments := ipsComments[ip.IP]
-			if ip.Comment != "" && !slices.Contains(comments, ip.Comment) {
-				comments = append(comments, rr.CommentText())
-				ipsComments[ip.IP] = comments
-				ip.Comment = strings.Join(comments, ", ")
+			comments := make([]string, 0)
+			if r.Note() != "" {
+				comments = append(comments, r.Note())
 			}
+			ipsComments[r.IP()] = comments
+		}
+		ip.Hosts = append(ip.Hosts, r.Aliases()...)
+
+		comments := ipsComments[ip.IP]
+		if ip.Comment != "" && !slices.Contains(comments, ip.Comment) {
+			comments = append(comments, r.Note())
+			ipsComments[ip.IP] = comments
+			ip.Comment = strings.Join(comments, ", ")
 		}
 	}
 	return result
 }
 
-func convertOnly(ips *dom.IPListBlock) []*HostModel {
+func convertOnly(ips *dom.IPAliasesBlock) []*HostModel {
 	result := make([]*HostModel, 0)
 
 	group := HostGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
-		Comment: ips.Comment(),
+		Comment: ips.Note(),
 	}
 
-	for _, r := range ips.BodyElements() {
-		if r.Type() == syntax.IPMapping {
-			rr := r.(*syntax.IPMappingLine)
-			ip := &HostModel{
-				IP:      rr.IPAddress(),
-				Comment: rr.CommentText(),
-				Hosts:   rr.DomainNames(),
-				Group:   group,
-			}
-			result = append(result, ip)
+	for _, r := range ips.Entries() {
+		ip := &HostModel{
+			IP:      r.IP(),
+			Comment: r.Note(),
+			Hosts:   r.Aliases(),
+			Group:   group,
 		}
+		result = append(result, ip)
 	}
 	return result
 }
