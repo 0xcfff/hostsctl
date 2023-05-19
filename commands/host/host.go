@@ -10,7 +10,7 @@ func NewCmdHost() *cobra.Command {
 		},
 	}
 	cmd.AddCommand(NewCmdIpList())
-	cmd.AddCommand(NewCmdHostAdd())
+	cmd.AddCommand(NewCmdAliasAdd())
 
 	return cmd
 }

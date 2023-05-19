@@ -39,6 +39,16 @@ func (doc *Document) IPsBlockByName(name string) *IPAliasesBlock {
 	return result
 }
 
+func (doc *Document) IPBlocks() []*IPAliasesBlock {
+	blocks := make([]*IPAliasesBlock, 0)
+	for _, blk := range doc.blocks {
+		if blk.Type() == IPList {
+			blocks = append(blocks, blk.(*IPAliasesBlock))
+		}
+	}
+	return blocks
+}
+
 func findBlockByPredicate[B any](blocks []Block, match func(block B) bool) B {
 	var result B
 	for _, blk := range blocks {

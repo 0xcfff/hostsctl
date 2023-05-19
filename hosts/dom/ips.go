@@ -18,7 +18,7 @@ type IPAliasesBlock struct {
 	autoId     int
 	name       string
 	note       string
-	entries    []*IPAliasesLine
+	entries    []*IPAliasesEntry
 	changed    bool
 }
 
@@ -70,8 +70,29 @@ func (blk *IPAliasesBlock) SetNote(comment string) {
 	blk.changed = true
 }
 
-func (blk *IPAliasesBlock) Entries() []*IPAliasesLine {
+func (blk *IPAliasesBlock) Entries() []*IPAliasesEntry {
 	return slices.Clone(blk.entries)
+}
+
+func (blk *IPAliasesBlock) EntriesByIP(ip string) []*IPAliasesEntry {
+	found := make([]*IPAliasesEntry, 0)
+	for _, ent := range blk.entries {
+		if ent.ip == ip {
+			found = append(found, ent)
+		}
+	}
+	return found
+}
+
+func (blk *IPAliasesBlock) EntriesByAlias(aliase string) []*IPAliasesEntry {
+	found := make([]*IPAliasesEntry, 0)
+	for _, ent := range blk.entries {
+		if slices.Contains(ent.aliases, aliase) {
+			found = append(found, ent)
+			break
+		}
+	}
+	return found
 }
 
 func newIPAliasesBlockFromElements(headerElements []*syntax.CommentLine, bodyElements []syntax.Element, autoId int) *IPAliasesBlock {
@@ -159,10 +180,10 @@ func parseNFillIPsBlockHeader(block *IPAliasesBlock, autoId int) {
 }
 
 func fillIPsBlockBody(block *IPAliasesBlock, bodyElements []syntax.Element) {
-	entries := make([]*IPAliasesLine, 0)
+	entries := make([]*IPAliasesEntry, 0)
 	if len(bodyElements) > 0 {
 		for _, el := range bodyElements {
-			item := newIPMappingFromElement(el)
+			item := newIPAliasesEntryFromElement(el)
 			entries = append(entries, item)
 		}
 	}

@@ -9,7 +9,7 @@ import (
 
 type HostModel struct {
 	IP      string         `json:"ip"                yaml:"ip"`
-	Hosts   []string       `json:"aliases"           yaml:"aliases"`
+	Aliases []string       `json:"aliases"           yaml:"aliases"`
 	Comment string         `json:"comment,omitempty" yaml:"comment,omitempty"`
 	Group   HostGroupModel `json:"group,omitempty"   yaml:"group,omitempty"`
 }
@@ -66,7 +66,7 @@ func ungroupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 		for _, al := range r.Aliases() {
 			ip := &HostModel{
 				IP:      r.IP(),
-				Hosts:   []string{al},
+				Aliases: []string{al},
 				Comment: r.Note(),
 				Group:   group,
 			}
@@ -104,7 +104,7 @@ func groupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 			}
 			ipsComments[r.IP()] = comments
 		}
-		ip.Hosts = append(ip.Hosts, r.Aliases()...)
+		ip.Aliases = append(ip.Aliases, r.Aliases()...)
 
 		comments := ipsComments[ip.IP]
 		if ip.Comment != "" && !slices.Contains(comments, ip.Comment) {
@@ -129,7 +129,7 @@ func convertOnly(ips *dom.IPAliasesBlock) []*HostModel {
 		ip := &HostModel{
 			IP:      r.IP(),
 			Comment: r.Note(),
-			Hosts:   r.Aliases(),
+			Aliases: r.Aliases(),
 			Group:   group,
 		}
 		result = append(result, ip)

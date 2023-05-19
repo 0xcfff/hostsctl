@@ -47,7 +47,7 @@ var (
 	}
 )
 
-type IpListOptions struct {
+type AliasListOptions struct {
 	command        *cobra.Command
 	output         string
 	outputFormat   outFormat
@@ -58,7 +58,7 @@ type IpListOptions struct {
 
 func NewCmdIpList() *cobra.Command {
 
-	opt := &IpListOptions{}
+	opt := &AliasListOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "list [(-o|--output)=name] [filter]",
@@ -77,7 +77,7 @@ func NewCmdIpList() *cobra.Command {
 	return cmd
 }
 
-func (opt *IpListOptions) Complete(cmd *cobra.Command, args []string) error {
+func (opt *AliasListOptions) Complete(cmd *cobra.Command, args []string) error {
 
 	opt.command = cmd
 
@@ -95,11 +95,11 @@ func (opt *IpListOptions) Complete(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (opt *IpListOptions) Validate() error {
+func (opt *AliasListOptions) Validate() error {
 	return nil
 }
 
-func (opt *IpListOptions) Execute() error {
+func (opt *AliasListOptions) Execute() error {
 	src := hosts.NewSource(hosts.EtcHosts.Path(), common.FileSystem(opt.command.Context()))
 	c, err := src.Load()
 	cobra.CheckErr(err)
@@ -121,7 +121,7 @@ func (opt *IpListOptions) Execute() error {
 	return nil
 }
 
-func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
+func writeDataAsText(opt *AliasListOptions, data *dom.Document) error {
 	m := NewHostModels(data, opt.outputGrouping)
 
 	err := iotools.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
@@ -146,12 +146,12 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 			sys := ""
 			cntSystem := 0
 
-			for _, alias := range ip.Hosts {
+			for _, alias := range ip.Aliases {
 				if iptools.IsSystemAlias(ip.IP, alias) {
 					cntSystem += 1
 				}
 			}
-			if cntSystem == len(ip.Hosts) {
+			if cntSystem == len(ip.Aliases) {
 				sys = "+"
 			} else if cntSystem > 0 {
 				sys = "*"
@@ -162,7 +162,7 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 				gn = fmt.Sprint(ip.Group.Id)
 			}
 
-			values := []string{grp, sys, ip.IP, strings.Join(ip.Hosts, ", "), ip.Comment, gn, ip.Group.Comment}
+			values := []string{grp, sys, ip.IP, strings.Join(ip.Aliases, ", "), ip.Comment, gn, ip.Group.Comment}
 
 			visible := getVisibleValues(opt, values)
 			fmt.Fprint(w, strings.Join(visible, "\t"))
@@ -174,13 +174,13 @@ func writeDataAsText(opt *IpListOptions, data *dom.Document) error {
 	return err
 }
 
-func writeDataAsHosts(opt *IpListOptions, data *dom.Document) error {
+func writeDataAsHosts(opt *AliasListOptions, data *dom.Document) error {
 	m := NewHostModels(data, opt.outputGrouping)
 
 	err := iotools.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 		for _, ip := range m {
 
-			values := []string{ip.IP, strings.Join(ip.Hosts, ", ")}
+			values := []string{ip.IP, strings.Join(ip.Aliases, ", ")}
 			fmt.Fprint(w, strings.Join(values, "\t"))
 			fmt.Fprintln(w)
 		}
@@ -189,7 +189,7 @@ func writeDataAsHosts(opt *IpListOptions, data *dom.Document) error {
 	return err
 }
 
-func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
+func writeDataAsJson(opt *AliasListOptions, data *dom.Document) error {
 	m := NewHostModels(data, opt.outputGrouping)
 	buff, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
@@ -199,7 +199,7 @@ func writeDataAsJson(opt *IpListOptions, data *dom.Document) error {
 	return nil
 }
 
-func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
+func writeDataAsYaml(opt *AliasListOptions, data *dom.Document) error {
 	m := NewHostModels(data, opt.outputGrouping)
 	buff, err := yaml.Marshal(m)
 	if err != nil {
@@ -209,7 +209,7 @@ func writeDataAsYaml(opt *IpListOptions, data *dom.Document) error {
 	return nil
 }
 
-func getVisibleValues(opt *IpListOptions, values []string) []string {
+func getVisibleValues(opt *AliasListOptions, values []string) []string {
 	// "GRP", "SYS", "IP", "ALIAS", "COMMENT", "GROUP", "GROUP COMMENT"
 	switch opt.outputFormat {
 	case fmtText:
