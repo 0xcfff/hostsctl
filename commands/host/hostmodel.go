@@ -23,9 +23,9 @@ type HostGroupModel struct {
 type IPGrouping int
 
 const (
-	GrpOriginal IPGrouping = iota
-	GrpUngroup  IPGrouping = iota
-	GrpGroup    IPGrouping = iota
+	GrpRaw     IPGrouping = iota
+	GrpUngroup IPGrouping = iota
+	GrpGroup   IPGrouping = iota
 )
 
 func NewHostModels(doc *dom.Document, grouping IPGrouping) []*HostModel {
@@ -46,7 +46,7 @@ func convertIPs(ips *dom.IPAliasesBlock, grouping IPGrouping) []*HostModel {
 		return ungroupAndConvert(ips)
 	case GrpGroup:
 		return groupAndConvert(ips)
-	case GrpOriginal:
+	case GrpRaw:
 		return convertOnly(ips)
 	default:
 		panic("unknown grouping specified")

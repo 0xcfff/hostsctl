@@ -34,11 +34,11 @@ func Test_format_sameAsOriginal(t *testing.T) {
 			w := &strings.Builder{}
 
 			// act
-			fsdoc := format(doc)
-			syntax.Write(w, fsdoc)
+			fsdoc := constructSyntax(doc)
+			syntax.Write(w, fsdoc, syntax.FmtDefault)
 
 			// assert
-			assert.NotSame(t, sdoc, fsdoc) // different document instances
+			assert.NotSame(t, sdoc, fsdoc)       // different document instances
 			assert.Equal(t, content, w.String()) // but same content
 		})
 	}

@@ -14,10 +14,10 @@ func Read(r io.Reader) (*Document, error) {
 }
 
 // Write the content to the document
-func Write(w io.Writer, doc *Document) error {
+func Write(w io.Writer, doc *Document, fm FormatMode) error {
 	if doc == nil {
 		return nil
 	}
 
-	return format(w, doc)
+	return format(w, doc, fm)
 }

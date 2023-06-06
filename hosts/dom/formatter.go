@@ -1,82 +1,95 @@
 package dom
 
 import (
+	"bufio"
+	"strings"
+
 	"github.com/0xcfff/hostsctl/hosts/syntax"
+	"github.com/0xcfff/hostsctl/iotools"
 )
 
-type FormatMode int
-
-type formattingContext struct {
-	formattedElements []syntax.Element
-
-	// TODO: uncomment to implement minimal formatting for newly added elements
-	// commentsFormat struct {
-	// }
-	// aliasesFormat struct {
-	// }
-}
-
-func format(doc *Document) *syntax.Document {
-	ctx := newFormattingContext()
+func constructSyntax(doc *Document) *syntax.Document {
+	elements := make([]syntax.Element, 0)
 
 	for _, block := range doc.blocks {
 		switch block.Type() {
 		case IPList:
-			formatAliases(ctx, block.(*IPAliasesBlock))
+			bels := constructAliases(block.(*IPAliasesBlock))
+			elements = append(elements, bels...)
 			break
 		case Comments:
-			formatComments(ctx, block.(*CommentsBlock))
+			bels := constructComments(block.(*CommentsBlock))
+			elements = append(elements, bels...)
 			break
 		case Blanks:
-			formatBlanks(ctx, block.(*BlanksBlock))
+			bels := constructBlanks(block.(*BlanksBlock))
+			elements = append(elements, bels...)
 			break
 		case Unknown:
-			formatUnknown(ctx, block.(*UnrecognizedBlock))
+			bels := constructUnknown(block.(*UnrecognizedBlock))
+			elements = append(elements, bels...)
 			break
 		}
 	}
 
-	return syntax.NewDocument(ctx.formattedElements)
+	return syntax.NewDocument(elements)
 }
 
-func formatAliases(ctx *formattingContext, block *IPAliasesBlock) {
+func constructAliases(block *IPAliasesBlock) []syntax.Element {
+	elements := make([]syntax.Element, 0)
 	for _, el := range block.origHeader {
-		ctx.appendElement(el)
+		elements = append(elements, el)
 	}
 	for _, el := range block.entries {
-		ctx.appendElement(el.origElement)
+		ipAlias := el.origElement
+		if ipAlias == nil {
+			ipAlias = syntax.NewIPMappingLine(el.ip, el.aliases, el.note)
+			el.origElement = ipAlias
+		}
+		elements = append(elements, ipAlias)
 	}
+	return elements
 }
 
-func formatComments(ctx *formattingContext, block *CommentsBlock) {
-	for _, el := range block.origComments {
-		// TODO: Add formatting to make sure newly added IPs are alligned with previously added ones
-		ctx.appendElement(el)
+func constructComments(block *CommentsBlock) []syntax.Element {
+	elements := make([]syntax.Element, 0)
+	if block.origComments != nil {
+		for _, el := range block.origComments {
+			elements = append(elements, el)
+		}
+	} else {
+		s := bufio.NewScanner(strings.NewReader(block.commentsText))
+		s.Split(iotools.LinesSplitterRespectEndNewLineFunc())
+		lines := make([]string, 0)
+		for {
+			if ok := s.Scan(); !ok {
+				break
+			}
+			lines = append(lines, s.Text())
+		}
+		for _, l := range lines {
+			el := syntax.NewCommentsLine(l)
+			elements = append(elements, el)
+		}
 	}
+	return elements
 }
 
-func formatBlanks(ctx *formattingContext, block *BlanksBlock) {
+func constructBlanks(block *BlanksBlock) []syntax.Element {
+	elements := make([]syntax.Element, 0)
 	for _, el := range block.blanks {
-		ctx.appendElement(el)
+		elements = append(elements, el)
 	}
+	return elements
 }
 
-func formatUnknown(ctx *formattingContext, block *UnrecognizedBlock) {
+func constructUnknown(block *UnrecognizedBlock) []syntax.Element {
+	elements := make([]syntax.Element, 0)
 	for _, el := range block.lines {
 		if !el.HasPreformattedText() {
 			panic("Can not format unrecognized block, logic should never go here")
 		}
-		ctx.appendElement(el)
+		elements = append(elements, el)
 	}
-}
-
-func newFormattingContext() *formattingContext {
-	ctx := formattingContext{
-		formattedElements: make([]syntax.Element, 0),
-	}
-	return &ctx
-}
-
-func (ctx *formattingContext) appendElement(el syntax.Element) {
-	ctx.formattedElements = append(ctx.formattedElements, el)
+	return elements
 }

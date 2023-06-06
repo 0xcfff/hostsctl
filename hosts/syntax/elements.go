@@ -3,6 +3,8 @@ package syntax
 import (
 	"fmt"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 type ElementType int
@@ -58,6 +60,12 @@ func (el *CommentLine) CommentText() string {
 
 func (el *CommentLine) formatLine() string {
 	return fmt.Sprintf("# %v", el.commentText)
+}
+
+func NewCommentsLine(commentText string) *CommentLine {
+	return &CommentLine{
+		commentText: commentText,
+	}
 }
 
 type UnrecognizedLine struct {
@@ -123,4 +131,12 @@ func (el *IPMappingLine) formatLine() string {
 		b.WriteString(ip)
 	}
 	return b.String()
+}
+
+func NewIPMappingLine(ip string, domainNames []string, comment string) *IPMappingLine {
+	return &IPMappingLine{
+		ip:          ip,
+		domainNames: slices.Clone(domainNames),
+		commentText: comment,
+	}
 }

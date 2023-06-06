@@ -95,6 +95,16 @@ func (blk *IPAliasesBlock) EntriesByAlias(aliase string) []*IPAliasesEntry {
 	return found
 }
 
+func (blk *IPAliasesBlock) AddEntry(entry *IPAliasesEntry) {
+	blk.entries = append(blk.entries, entry)
+}
+
+func NewIPAliasesBlock() *IPAliasesBlock {
+	return &IPAliasesBlock{
+		changed: true,
+	}
+}
+
 func newIPAliasesBlockFromElements(headerElements []*syntax.CommentLine, bodyElements []syntax.Element, autoId int) *IPAliasesBlock {
 	block := &IPAliasesBlock{
 		origHeader: headerElements,

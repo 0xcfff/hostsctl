@@ -1,6 +1,7 @@
 package dom
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
@@ -39,6 +40,16 @@ func (doc *Document) IPsBlockByName(name string) *IPAliasesBlock {
 	return result
 }
 
+func (doc *Document) IPsBlockByIdOrName(idOrName string) *IPAliasesBlock {
+	var ipsBlock *IPAliasesBlock
+	if id, err := strconv.Atoi(idOrName); err == nil {
+		ipsBlock = doc.IPsBlockById(id)
+	} else {
+		ipsBlock = doc.IPsBlockByName(ipsBlock.Name())
+	}
+	return ipsBlock
+}
+
 func (doc *Document) IPBlocks() []*IPAliasesBlock {
 	blocks := make([]*IPAliasesBlock, 0)
 	for _, blk := range doc.blocks {
@@ -47,6 +58,10 @@ func (doc *Document) IPBlocks() []*IPAliasesBlock {
 		}
 	}
 	return blocks
+}
+
+func (doc *Document) AddBlock(block Block) {
+	doc.blocks = append(doc.blocks, block)
 }
 
 func findBlockByPredicate[B any](blocks []Block, match func(block B) bool) B {

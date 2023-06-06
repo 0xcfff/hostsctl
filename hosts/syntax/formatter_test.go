@@ -32,7 +32,7 @@ func Test_format_sameAsOriginal(t *testing.T) {
 			w := &strings.Builder{}
 
 			// act
-			err := format(w, doc)
+			err := format(w, doc, FmtDefault)
 
 			// assert
 			assert.NoError(t, err)

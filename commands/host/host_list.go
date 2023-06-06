@@ -39,11 +39,10 @@ var (
 	}
 
 	groupings = map[string]IPGrouping{
-		"":         GrpUngroup,
-		"orig":     GrpOriginal,
-		"original": GrpOriginal,
-		"group":    GrpGroup,
-		"ungroup":  GrpUngroup,
+		"":        GrpUngroup,
+		"raw":     GrpRaw,
+		"group":   GrpGroup,
+		"ungroup": GrpUngroup,
 	}
 )
 
@@ -72,7 +71,7 @@ func NewCmdIpList() *cobra.Command {
 
 	cmd.Flags().BoolVar(&opt.noHeaders, "no-headers", opt.noHeaders, "Disable printing headers")
 	cmd.Flags().StringVarP(&opt.output, "output", "o", opt.output, fmt.Sprintf("Output format. One of %s", strings.Join(maps.Keys(formats), ",")))
-	cmd.Flags().StringVarP(&opt.grouping, "grouping", "g", opt.grouping, fmt.Sprintf("IPs grouping. One of %s", strings.Join(maps.Keys(groupings), ",")))
+	cmd.Flags().StringVarP(&opt.grouping, "arrange", "a", opt.grouping, fmt.Sprintf("IPs output grouping. One of %s.", strings.Join(maps.Keys(groupings), ",")))
 
 	return cmd
 }

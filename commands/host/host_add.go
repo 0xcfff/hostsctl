@@ -1,16 +1,19 @@
 package host
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/0xcfff/hostsctl/commands/common"
+	"github.com/0xcfff/hostsctl/hosts"
+	"github.com/0xcfff/hostsctl/hosts/dom"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 )
 
 type AliasAddOptions struct {
-	command        *cobra.Command
-	output         string
-	outputFormat   outFormat
-	grouping       string
-	outputGrouping IPGrouping
-	noHeaders      bool
+	command       *cobra.Command
+	blockIdOrName string
 }
 
 func NewCmdAliasAdd() *cobra.Command {
@@ -18,30 +21,25 @@ func NewCmdAliasAdd() *cobra.Command {
 	opt := &AliasAddOptions{}
 
 	cmd := &cobra.Command{
-		// TODO: review below
 		Use:   "add [ip] [alias]...",
-		Short: "Adds IP address and aliases to /etc/hosts file",
+		Short: fmt.Sprintf("Adds IP alias to %s file", hosts.EtcHosts.Path()),
+		Args:  cobra.ArbitraryArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			// ip := &hosts.IPRecord{
-			// 	IP:      args[0],
-			// 	Aliases: args[1:],
-			// }
-			// fs := hosts.NewHostsFileSource("", nil)
-			// f, err := fs.LoadFile()
-			// cobra.CheckErr(err)
-
-			// f.AppendIp(ip)
-			// f.Dump()
-
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())
 			cobra.CheckErr(opt.Execute())
 		},
 	}
+
+	cmd.Flags().StringVarP(&opt.blockIdOrName, "block", "b", opt.blockIdOrName, "Block id or name")
+
 	return cmd
 }
 
 func (opt *AliasAddOptions) Complete(cmd *cobra.Command, args []string) error {
+
+	opt.command = cmd
+
 	return nil
 }
 
@@ -50,5 +48,59 @@ func (opt *AliasAddOptions) Validate() error {
 }
 
 func (opt *AliasAddOptions) Execute() error {
+	src := hosts.NewSource(hosts.EtcHosts.Path(), common.FileSystem(opt.command.Context()))
+	doc, err := src.Load()
+	cobra.CheckErr(err)
+
+	var ipsBlock *dom.IPAliasesBlock
+	if opt.blockIdOrName != "" {
+		ipsBlock = doc.IPsBlockByIdOrName(opt.blockIdOrName)
+		if ipsBlock == nil {
+			return fmt.Errorf("Block '%s' was not found", opt.blockIdOrName)
+		}
+	} else {
+		blocks := doc.IPBlocks()
+
+		// try to use last IPS bock
+		if len(blocks) > 0 {
+			lastIPsBlock := blocks[len(blocks)-1]
+			var lastIPBlockIfx dom.Block = lastIPsBlock
+
+			allBlocks := doc.Blocks()
+			lastIndex := slices.Index(allBlocks, lastIPBlockIfx)
+			foundBreakingBlock := false
+			for i := lastIndex + 1; i < len(allBlocks); i++ {
+				blockType := allBlocks[i].Type()
+				shouldBrak := false
+				switch blockType {
+				case dom.Blanks:
+					continue
+				default:
+					foundBreakingBlock = true
+					shouldBrak = true
+				}
+				if shouldBrak {
+					break
+				}
+			}
+			if !foundBreakingBlock {
+				ipsBlock = lastIPsBlock
+			}
+		}
+
+		// create new block
+		if ipsBlock == nil {
+			ipsBlock := dom.NewIPAliasesBlock()
+			doc.AddBlock(ipsBlock)
+		}
+	}
+
+	ipAlias := dom.NewIPAliasesEntry("127.0.0.1")
+	ipsBlock.AddEntry(ipAlias)
+
+	dom.Write(os.Stdout, doc, dom.FmtDefault)
+
+	// TODO: add logic to output result
+
 	return nil
 }
