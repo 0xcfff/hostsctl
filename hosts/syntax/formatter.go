@@ -73,7 +73,7 @@ func newFormattingContext(fmt FormatMode) *formattingContext {
 		format:                  fmt,
 		autoformatSettings:      defaultAliasFormattingSettings,
 		globalAliasFormatParams: newAliasFormattingParams(),
-		lastAliasFormatParams:   nil,
+		lastAliasFormatParams:   newAliasFormattingParams(),
 	}
 	return &ctx
 }
@@ -137,6 +137,9 @@ func formatAlias(el *IPMappingLine, fm FormatMode, fs *aliasAutoformattingSettin
 		if fp.aliasPosition > b.Len() {
 			b.WriteString(strings.Repeat(" ", b.Len()-fp.aliasPosition))
 		}
+		if !strings.HasSuffix(b.String(), " ") {
+			b.WriteString(" ")
+		}
 		first := true
 		for _, a := range el.domainNames {
 			if first {
@@ -148,6 +151,9 @@ func formatAlias(el *IPMappingLine, fm FormatMode, fs *aliasAutoformattingSettin
 		}
 		if fp.commentPosition > b.Len() {
 			b.WriteString(strings.Repeat(" ", b.Len()-fp.commentPosition))
+		}
+		if !strings.HasSuffix(b.String(), " ") {
+			b.WriteString(" ")
 		}
 		b.WriteString(el.commentText)
 

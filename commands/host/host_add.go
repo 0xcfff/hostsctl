@@ -14,6 +14,7 @@ import (
 type AliasAddOptions struct {
 	command       *cobra.Command
 	blockIdOrName string
+	comment       string
 }
 
 func NewCmdAliasAdd() *cobra.Command {
@@ -32,6 +33,7 @@ func NewCmdAliasAdd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&opt.blockIdOrName, "block", "b", opt.blockIdOrName, "Block id or name")
+	cmd.Flags().StringVarP(&opt.comment, "comment", "c", opt.comment, "Alias comment")
 
 	return cmd
 }
@@ -56,7 +58,7 @@ func (opt *AliasAddOptions) Execute() error {
 	if opt.blockIdOrName != "" {
 		ipsBlock = doc.IPsBlockByIdOrName(opt.blockIdOrName)
 		if ipsBlock == nil {
-			return fmt.Errorf("Block '%s' was not found", opt.blockIdOrName)
+			return fmt.Errorf("block '%s' was not found", opt.blockIdOrName)
 		}
 	} else {
 		blocks := doc.IPBlocks()
@@ -95,7 +97,12 @@ func (opt *AliasAddOptions) Execute() error {
 		}
 	}
 
+	fmt.Printf("OS Args\n%v \n", os.Args)
+	fmt.Printf("CMD Args\n%v \n", opt.command.Flags().Args())
+
 	ipAlias := dom.NewIPAliasesEntry("127.0.0.1")
+	ipAlias.AddAlias("test1.local")
+	ipAlias.AddAlias("test2.local")
 	ipsBlock.AddEntry(ipAlias)
 
 	dom.Write(os.Stdout, doc, dom.FmtDefault)

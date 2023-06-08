@@ -13,8 +13,8 @@ var (
 	defaultAliasFormattingSettings *aliasAutoformattingSettings = &aliasAutoformattingSettings{
 		minSpacingToIP:           0,
 		minSpacingToAlias:        8,
-		minSpacingBetweenAliases: 2,
-		minSpacingToComment:      1,
+		minSpacingBetweenAliases: 1,
+		minSpacingToComment:      2,
 	}
 )
 
