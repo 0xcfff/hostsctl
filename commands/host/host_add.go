@@ -22,7 +22,7 @@ func NewCmdAliasAdd() *cobra.Command {
 	opt := &AliasAddOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "add [ip] [alias]...",
+		Use:   "add [ip] [alias, ...]",
 		Short: fmt.Sprintf("Adds IP alias to %s file", hosts.EtcHosts.Path()),
 		Args:  cobra.ArbitraryArgs,
 		Run: func(cmd *cobra.Command, args []string) {
