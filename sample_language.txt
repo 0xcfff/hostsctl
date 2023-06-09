@@ -119,6 +119,10 @@ TODO
 add ParseFlags to EtcHosts parsing logic
 
 
+# How to retrieve data from K8s
+# Cluster Nodes
+kubectl get nodes -o jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address} {.status.addresses[?(@.type=="Hostname")].address}{"\n"}'
+kubectl get nodes -o custom-columns='"IP":.status.addresses[?(@.type=="InternalIP")].address,ALIAS:.status.addresses[?(@.type=="Hostname")].address' --no-headers
 
 
 ######################
