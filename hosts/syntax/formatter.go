@@ -135,7 +135,7 @@ func formatAlias(el *IPMappingLine, fm FormatMode, fs *aliasAutoformattingSettin
 		}
 		b.WriteString(el.ip)
 		if fp.aliasPosition > b.Len() {
-			b.WriteString(strings.Repeat(" ", b.Len()-fp.aliasPosition))
+			b.WriteString(strings.Repeat(" ", fp.aliasPosition-b.Len()))
 		}
 		if !strings.HasSuffix(b.String(), " ") {
 			b.WriteString(" ")
@@ -150,7 +150,7 @@ func formatAlias(el *IPMappingLine, fm FormatMode, fs *aliasAutoformattingSettin
 			b.WriteString(a)
 		}
 		if fp.commentPosition > b.Len() {
-			b.WriteString(strings.Repeat(" ", b.Len()-fp.commentPosition))
+			b.WriteString(strings.Repeat(" ", fp.commentPosition-b.Len()))
 		}
 		if !strings.HasSuffix(b.String(), " ") {
 			b.WriteString(" ")

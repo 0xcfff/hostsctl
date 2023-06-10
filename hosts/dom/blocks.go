@@ -2,6 +2,7 @@ package dom
 
 import (
 	"github.com/0xcfff/hostsctl/hosts/syntax"
+	"golang.org/x/exp/slices"
 )
 
 type BlockType int
@@ -32,8 +33,7 @@ func (blk *UnrecognizedBlock) dirty() bool {
 }
 
 func (blk *UnrecognizedBlock) BodyElements() []syntax.Element {
-	list := make([]syntax.Element, 0, len(blk.lines))
-	return list
+	return slices.Clone(blk.lines)
 }
 
 // Sequence of blank lines

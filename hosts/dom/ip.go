@@ -81,6 +81,10 @@ func (blk *IPAliasesEntry) SetDisabled(disabled bool) {
 		blk.changed = true
 	}
 }
+func (blk *IPAliasesEntry) ClearFormatting() {
+	blk.origElement = nil
+	blk.changed = true
+}
 
 func removeElements[T any](l []T, remove func(T) bool) ([]T, bool) {
 	out := make([]T, 0)

@@ -45,7 +45,7 @@ func (doc *Document) IPsBlockByIdOrName(idOrName string) *IPAliasesBlock {
 	if id, err := strconv.Atoi(idOrName); err == nil {
 		ipsBlock = doc.IPsBlockById(id)
 	} else {
-		ipsBlock = doc.IPsBlockByName(ipsBlock.Name())
+		ipsBlock = doc.IPsBlockByName(idOrName)
 	}
 	return ipsBlock
 }

@@ -70,6 +70,15 @@ func (blk *IPAliasesBlock) SetNote(comment string) {
 	blk.changed = true
 }
 
+func (blk *IPAliasesBlock) ClearFormatting() {
+	blk.origHeader = nil
+	blk.changed = true
+
+	for _, el := range blk.entries {
+		el.ClearFormatting()
+	}
+}
+
 func (blk *IPAliasesBlock) Entries() []*IPAliasesEntry {
 	return slices.Clone(blk.entries)
 }
