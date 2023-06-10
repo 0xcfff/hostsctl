@@ -50,7 +50,7 @@ type AliasListOptions struct {
 	command        *cobra.Command
 	output         string
 	outputFormat   outFormat
-	grouping       string
+	arrange        string
 	outputGrouping IPGrouping
 	noHeaders      bool
 }
@@ -71,7 +71,7 @@ func NewCmdAliasList() *cobra.Command {
 
 	cmd.Flags().BoolVar(&opt.noHeaders, "no-headers", opt.noHeaders, "Disable printing headers")
 	cmd.Flags().StringVarP(&opt.output, "output", "o", opt.output, fmt.Sprintf("Output format. One of %s", strings.Join(maps.Keys(formats), ",")))
-	cmd.Flags().StringVarP(&opt.grouping, "arrange", "a", opt.grouping, fmt.Sprintf("IPs output grouping. One of %s.", strings.Join(maps.Keys(groupings), ",")))
+	cmd.Flags().StringVarP(&opt.arrange, "arrange", "a", opt.arrange, fmt.Sprintf("IPs output grouping. One of %s.", strings.Join(maps.Keys(groupings), ",")))
 
 	return cmd
 }
@@ -86,9 +86,9 @@ func (opt *AliasListOptions) Complete(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("--output %v of list command does not support specified output format", opt.output)
 	}
 
-	opt.outputGrouping, ok = groupings[opt.grouping]
+	opt.outputGrouping, ok = groupings[opt.arrange]
 	if !ok {
-		return fmt.Errorf("--grouping %v of list command does not support specified value", opt.grouping)
+		return fmt.Errorf("--grouping %v of list command does not support specified value", opt.arrange)
 	}
 
 	return nil
