@@ -1,4 +1,4 @@
-package host
+package alias
 
 import (
 	"encoding/json"
@@ -55,7 +55,7 @@ type AliasListOptions struct {
 	noHeaders      bool
 }
 
-func NewCmdIpList() *cobra.Command {
+func NewCmdAliasList() *cobra.Command {
 
 	opt := &AliasListOptions{}
 
@@ -132,7 +132,7 @@ func writeDataAsText(opt *AliasListOptions, data *dom.Document) error {
 			fmt.Fprintln(w)
 		}
 
-		var prev *HostModel
+		var prev *AliasModel
 		var grpId int = 0
 
 		for _, ip := range m {

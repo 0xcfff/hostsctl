@@ -1,4 +1,4 @@
-package host
+package alias
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHostListCommand(t *testing.T) {
+func TestAliasListCommand(t *testing.T) {
 	type args struct {
 		args       []string
 		inputFile  string
@@ -176,7 +176,7 @@ func TestHostListCommand(t *testing.T) {
 			ctx := common.WithCustomFilesystem(context.Background(), fs)
 			out := &strings.Builder{}
 
-			cmd := NewCmdIpList()
+			cmd := NewCmdAliasList()
 			cmd.SetArgs(tt.args.args)
 			cmd.SetOutput(out)
 			cmd.SetContext(ctx)

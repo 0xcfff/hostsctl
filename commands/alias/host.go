@@ -1,15 +1,15 @@
-package host
+package alias
 
 import "github.com/spf13/cobra"
 
-func NewCmdHost() *cobra.Command {
+func NewCmdAlias() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "host [command]",
+		Use: "alias [command]",
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(cmd.Help())
 		},
 	}
-	cmd.AddCommand(NewCmdIpList())
+	cmd.AddCommand(NewCmdAliasList())
 	cmd.AddCommand(NewCmdAliasAdd())
 
 	return cmd

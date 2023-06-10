@@ -1,4 +1,4 @@
-package host
+package alias
 
 import (
 	"strings"
@@ -7,14 +7,14 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type HostModel struct {
-	IP      string         `json:"ip"                yaml:"ip"`
-	Aliases []string       `json:"aliases"           yaml:"aliases"`
-	Comment string         `json:"comment,omitempty" yaml:"comment,omitempty"`
-	Group   HostGroupModel `json:"group,omitempty"   yaml:"group,omitempty"`
+type AliasModel struct {
+	IP      string          `json:"ip"                yaml:"ip"`
+	Aliases []string        `json:"aliases"           yaml:"aliases"`
+	Comment string          `json:"comment,omitempty" yaml:"comment,omitempty"`
+	Group   AliasGroupModel `json:"group,omitempty"   yaml:"group,omitempty"`
 }
 
-type HostGroupModel struct {
+type AliasGroupModel struct {
 	Id      int    `json:"id"             yaml:"id"`
 	Name    string `json:"name,omitempty" yaml:"name,omitempty"`
 	Comment string `json:"-"              yaml:"-"`
@@ -28,8 +28,8 @@ const (
 	GrpGroup   IPGrouping = iota
 )
 
-func NewHostModels(doc *dom.Document, grouping IPGrouping) []*HostModel {
-	var result []*HostModel = make([]*HostModel, 0)
+func NewHostModels(doc *dom.Document, grouping IPGrouping) []*AliasModel {
+	var result []*AliasModel = make([]*AliasModel, 0)
 
 	for _, block := range doc.Blocks() {
 		if block.Type() == dom.IPList {
@@ -40,7 +40,7 @@ func NewHostModels(doc *dom.Document, grouping IPGrouping) []*HostModel {
 	return result
 }
 
-func convertIPs(ips *dom.IPAliasesBlock, grouping IPGrouping) []*HostModel {
+func convertIPs(ips *dom.IPAliasesBlock, grouping IPGrouping) []*AliasModel {
 	switch grouping {
 	case GrpUngroup:
 		return ungroupAndConvert(ips)
@@ -53,10 +53,10 @@ func convertIPs(ips *dom.IPAliasesBlock, grouping IPGrouping) []*HostModel {
 	}
 }
 
-func ungroupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
-	result := make([]*HostModel, 0)
+func ungroupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
+	result := make([]*AliasModel, 0)
 
-	group := HostGroupModel{
+	group := AliasGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
 		Comment: ips.Note(),
@@ -64,7 +64,7 @@ func ungroupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 
 	for _, r := range ips.Entries() {
 		for _, al := range r.Aliases() {
-			ip := &HostModel{
+			ip := &AliasModel{
 				IP:      r.IP(),
 				Aliases: []string{al},
 				Comment: r.Note(),
@@ -76,12 +76,12 @@ func ungroupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 	return result
 }
 
-func groupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
-	result := make([]*HostModel, 0)
-	ipsMap := make(map[string]*HostModel)
+func groupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
+	result := make([]*AliasModel, 0)
+	ipsMap := make(map[string]*AliasModel)
 	ipsComments := make(map[string][]string)
 
-	group := HostGroupModel{
+	group := AliasGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
 		Comment: ips.Note(),
@@ -90,7 +90,7 @@ func groupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 	for _, r := range ips.Entries() {
 		ip, ok := ipsMap[r.IP()]
 		if !ok {
-			ip = &HostModel{
+			ip = &AliasModel{
 				IP:      r.IP(),
 				Group:   group,
 				Comment: r.Note(),
@@ -116,17 +116,17 @@ func groupAndConvert(ips *dom.IPAliasesBlock) []*HostModel {
 	return result
 }
 
-func convertOnly(ips *dom.IPAliasesBlock) []*HostModel {
-	result := make([]*HostModel, 0)
+func convertOnly(ips *dom.IPAliasesBlock) []*AliasModel {
+	result := make([]*AliasModel, 0)
 
-	group := HostGroupModel{
+	group := AliasGroupModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
 		Comment: ips.Note(),
 	}
 
 	for _, r := range ips.Entries() {
-		ip := &HostModel{
+		ip := &AliasModel{
 			IP:      r.IP(),
 			Comment: r.Note(),
 			Aliases: r.Aliases(),

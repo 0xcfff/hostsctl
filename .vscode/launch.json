@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/hostsctl",
-            "args": ["host", "list", "-o", "text"]
+            "args": ["alias", "list", "-o", "text"]
         },
         {
             "name": "Launch Package - Add",
@@ -18,7 +18,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/hostsctl",
-            "args": ["host", "add", "127.0.0.1", "test.my.local", "#", "test", "--", "a", "b", "c"]
+            "args": ["alias", "add", "127.0.0.1", "test.my.local", "#", "test", "--", "a", "b", "c"]
         }
     ]
 }
