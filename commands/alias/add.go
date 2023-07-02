@@ -3,7 +3,6 @@ package alias
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/0xcfff/hostsctl/commands/common"
@@ -60,30 +59,17 @@ func (opt *AliasAddOptions) Execute() error {
 	cobra.CheckErr(err)
 
 	ipsBlock, err := findOrCreateTargetAliasesBlock(doc, opt.blockIdOrName, opt.force)
-	if err != nil {
-		return err
-	}
+	cobra.CheckErr(err)
 
 	aliases, err := readIpAliases(opt)
-	if err != nil {
-		return err
-	}
+	cobra.CheckErr(err)
 
 	for _, a := range aliases {
 		ipsBlock.AddEntry(a)
 	}
 
-	fmt.Printf("OS Args\n%v \n", os.Args)
-	fmt.Printf("CMD Args\n%v \n", opt.command.Flags().Args())
-	fi, err := os.Stdin.Stat()
-	if err == nil {
-		fmt.Printf("Inpput Size: %d\n", fi.Size())
-	}
-	fmt.Println("-----------")
-
-	dom.Write(os.Stdout, doc, dom.FmtKeep)
-
-	// TODO: add logic to output result
+	err = src.Save(doc, dom.FmtKeep)
+	cobra.CheckErr(err)
 
 	return nil
 }
@@ -212,7 +198,7 @@ func findOrCreateTargetAliasesBlock(doc *dom.Document, ipBlockIdOrName string, c
 
 	// #3 try to create a new block
 	if ipsBlock == nil {
-		ipsBlock := dom.NewIPAliasesBlock()
+		ipsBlock = dom.NewIPAliasesBlock()
 		if ipBlockIdOrName != "" {
 			v, err := strconv.Atoi(ipBlockIdOrName)
 			if err != nil {

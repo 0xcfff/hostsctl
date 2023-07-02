@@ -12,7 +12,7 @@ var (
 	// Default alias autoformatting settings
 	defaultAliasFormattingSettings *aliasAutoformattingSettings = &aliasAutoformattingSettings{
 		minSpacingToIP:           0,
-		minSpacingToAlias:        8,
+		minSpacingToAlias:        2,
 		minSpacingBetweenAliases: 1,
 		minSpacingToComment:      2,
 	}
@@ -71,6 +71,10 @@ func (fmt *aliasFormattingParams) clone() *aliasFormattingParams {
 		aliasPosition:   fmt.aliasPosition,
 		commentPosition: fmt.commentPosition,
 	}
+}
+
+func (fmt *aliasFormattingParams) isEmpty() bool {
+	return fmt.ipPosition == -1 && fmt.aliasPosition == -1 && fmt.commentPosition == -1
 }
 
 func newAliasColumnWidths() *aliasColumnsWidths {

@@ -35,15 +35,15 @@ func format(w io.Writer, doc *Document, fmt FormatMode) error {
 			if fmt == FmtKeep && el.preformattedLineText != nil {
 				line = *el.preformattedLineText
 			} else {
-				fp := ctx.globalAliasFormatParams
-				if fp == nil {
-					fp = ctx.lastAliasFormatParams
+				fp := ctx.lastAliasFormatParams
+				if fp.isEmpty() {
+					fp = ctx.globalAliasFormatParams
 				}
 				line = formatAlias(el, ctx.format, ctx.autoformatSettings, fp)
-				cw := calculateAliasesColumnWidths(el, ctx.autoformatSettings)
-				ufp := calculateAliasesFormattingParams(cw, ctx.autoformatSettings)
-				ctx.lastAliasFormatParams.updateFrom(ufp)
 			}
+			cw := calculateAliasesActualColumnWidths(line, el, ctx.autoformatSettings)
+			ufp := translateColumnsToAliasesFormattingParams(cw, ctx.autoformatSettings)
+			ctx.lastAliasFormatParams.updateFrom(ufp)
 		default:
 			if it.HasPreformattedText() {
 				line = it.PreformattedLineText()
@@ -84,9 +84,8 @@ func calculateAutoformats(ctx *formattingContext, doc *Document) {
 	for _, el := range doc.elements {
 		switch el.Type() {
 		case IPMapping:
-			rwidths := calculateAliasesColumnWidths(el.(*IPMappingLine), settings)
+			rwidths := calculateAliasesTheoreticalColumnWidths(el.(*IPMappingLine), settings)
 			widths.updateFrom(rwidths)
-			break
 		}
 	}
 	ctx.globalAliasFormatParams = calculateAliasesFormattingParams(widths, settings)
@@ -100,7 +99,38 @@ func calculateAliasesFormattingParams(cw *aliasColumnsWidths, fs *aliasAutoforma
 	return fmt
 }
 
-func calculateAliasesColumnWidths(el *IPMappingLine, settings *aliasAutoformattingSettings) *aliasColumnsWidths {
+func translateColumnsToAliasesFormattingParams(cw *aliasColumnsWidths, fs *aliasAutoformattingSettings) *aliasFormattingParams {
+	fmt := newAliasFormattingParams()
+	fmt.ipPosition = fs.minSpacingToIP
+	fmt.aliasPosition = cw.ip
+	fmt.commentPosition = cw.ip + cw.alias
+	return fmt
+}
+
+func calculateAliasesActualColumnWidths(line string, el *IPMappingLine, settings *aliasAutoformattingSettings) *aliasColumnsWidths {
+
+	cols := newAliasColumnWidths()
+
+	aliasLeft := len(line)
+	for _, a := range el.domainNames {
+		idx := strings.Index(line, a)
+		if idx < aliasLeft {
+			aliasLeft = idx
+		}
+	}
+	cols.ip = aliasLeft
+
+	if el.commentText != "" {
+		cols.alias = strings.Index(line, el.commentText) - cols.ip
+		cols.comment = len(el.commentText)
+	} else {
+		cols.alias = len(line) - cols.ip
+	}
+
+	return cols
+}
+
+func calculateAliasesTheoreticalColumnWidths(el *IPMappingLine, settings *aliasAutoformattingSettings) *aliasColumnsWidths {
 
 	cols := newAliasColumnWidths()
 	cols.ip = len(el.ip)
@@ -152,11 +182,12 @@ func formatAlias(el *IPMappingLine, fm FormatMode, fs *aliasAutoformattingSettin
 		if fp.commentPosition > b.Len() {
 			b.WriteString(strings.Repeat(" ", fp.commentPosition-b.Len()))
 		}
-		if !strings.HasSuffix(b.String(), " ") {
-			b.WriteString(" ")
+		if el.commentText != "" {
+			if !strings.HasSuffix(b.String(), " ") {
+				b.WriteString(" ")
+			}
+			b.WriteString(el.commentText)
 		}
-		b.WriteString(el.commentText)
-
 		ipAlias = b.String()
 	}
 
