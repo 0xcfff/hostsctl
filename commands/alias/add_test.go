@@ -15,9 +15,10 @@ import (
 func TestAliasAddCommand(t *testing.T) {
 	type args struct {
 		args       []string
+		stdin      string
 		inputFile  string
 		outputFile string
-		outputText string
+		stdout     string
 	}
 	tests := []struct {
 		name string
@@ -25,21 +26,56 @@ func TestAliasAddCommand(t *testing.T) {
 		want bool
 	}{
 		{
-			"empty args",
+			"empty - args",
 			args{
 				[]string{"127.0.0.1", "my.domain.test"},
+				"",
 				"testdata/empty.txt",
-				"testdata/add/empty_args_result.txt",
+				"testdata/add/empty_one-alias_result.txt",
 				"",
 			},
 			true,
 		},
 		{
-			"default one line args",
+			"one line - args",
 			args{
 				[]string{"127.0.0.1", "my.domain.test"},
+				"",
 				"testdata/one-ip.txt",
-				"testdata/add/one-ip_args_result.txt",
+				"testdata/add/one-ip_one-alias_result.txt",
+				"",
+			},
+			true,
+		},
+		{
+			"one line - stdin",
+			args{
+				[]string{},
+				"127.0.0.1 my.domain.test",
+				"testdata/one-ip.txt",
+				"testdata/add/one-ip_one-alias_result.txt",
+				"",
+			},
+			true,
+		},
+		{
+			"one line - args + comment",
+			args{
+				[]string{"127.0.0.1", "my.domain.test", "-c", "My custom service domain"},
+				"127.0.0.1 my.domain.test",
+				"testdata/one-ip.txt",
+				"testdata/add/one-ip_one-alias-and-comment_result.txt",
+				"",
+			},
+			true,
+		},
+		{
+			"one line - stdin + comment",
+			args{
+				[]string{},
+				"127.0.0.1 my.domain.test # My custom service domain",
+				"testdata/one-ip.txt",
+				"testdata/add/one-ip_one-alias-and-comment_result.txt",
 				"",
 			},
 			true,
@@ -174,13 +210,15 @@ func TestAliasAddCommand(t *testing.T) {
 				t.FailNow()
 			}
 			expectRes := string(expectData)
-			expectOut := tt.args.outputText
+			expectOut := tt.args.stdout
 
 			ctx := common.WithCustomFilesystem(context.Background(), fs)
+			in := strings.NewReader(tt.args.stdin)
 			out := &strings.Builder{}
 
 			cmd := NewCmdAliasAdd()
 			cmd.SetArgs(tt.args.args)
+			cmd.SetIn(in)
 			cmd.SetOutput(out)
 			cmd.SetContext(ctx)
 

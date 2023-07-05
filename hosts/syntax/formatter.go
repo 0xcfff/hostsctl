@@ -179,13 +179,21 @@ func formatAlias(el *IPMappingLine, fm FormatMode, fs *aliasAutoformattingSettin
 			}
 			b.WriteString(a)
 		}
-		if fp.commentPosition > b.Len() {
-			b.WriteString(strings.Repeat(" ", fp.commentPosition-b.Len()))
-		}
 		if el.commentText != "" {
+			if fp.commentPosition > b.Len() {
+				b.WriteString(strings.Repeat(" ", fp.commentPosition-b.Len()))
+			}
+			orig := b.String()
+			trimmed := strings.TrimRight(orig, " \t")
+			spacing := len(orig) - len(trimmed)
+			if fp.commentPosition != b.Len() && spacing < fs.minSpacingToAlias {
+				b.WriteString(strings.Repeat(" ", fs.minSpacingToAlias-spacing))
+			}
+
 			if !strings.HasSuffix(b.String(), " ") {
 				b.WriteString(" ")
 			}
+			b.WriteString("# ")
 			b.WriteString(el.commentText)
 		}
 		ipAlias = b.String()
