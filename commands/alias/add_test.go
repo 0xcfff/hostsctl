@@ -1,8 +1,11 @@
 package alias
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -19,6 +22,7 @@ func TestAliasAddCommand(t *testing.T) {
 		inputFile  string
 		outputFile string
 		stdout     string
+		errorText  string
 	}
 	tests := []struct {
 		name string
@@ -33,6 +37,7 @@ func TestAliasAddCommand(t *testing.T) {
 				"testdata/empty.txt",
 				"testdata/add/empty_one-alias_result.txt",
 				"",
+				"",
 			},
 			true,
 		},
@@ -43,6 +48,7 @@ func TestAliasAddCommand(t *testing.T) {
 				"",
 				"testdata/one-ip.txt",
 				"testdata/add/one-ip_one-alias_result.txt",
+				"",
 				"",
 			},
 			true,
@@ -55,6 +61,7 @@ func TestAliasAddCommand(t *testing.T) {
 				"testdata/one-ip.txt",
 				"testdata/add/one-ip_one-alias_result.txt",
 				"",
+				"",
 			},
 			true,
 		},
@@ -65,6 +72,7 @@ func TestAliasAddCommand(t *testing.T) {
 				"127.0.0.1 my.domain.test",
 				"testdata/one-ip.txt",
 				"testdata/add/one-ip_one-alias-and-comment_result.txt",
+				"",
 				"",
 			},
 			true,
@@ -77,8 +85,21 @@ func TestAliasAddCommand(t *testing.T) {
 				"testdata/one-ip.txt",
 				"testdata/add/one-ip_one-alias-and-comment_result.txt",
 				"",
+				"",
 			},
 			true,
+		},
+		{
+			"one line - args + missing block",
+			args{
+				[]string{"127.0.0.1", "my.domain.test", "-b", "local-k8s"},
+				"",
+				"testdata/one-ip.txt",
+				"",
+				"",
+				"aliases block 'local-k8s' was not found",
+			},
+			false,
 		},
 		// {
 		// 	"default two blocks",
@@ -186,7 +207,23 @@ func TestAliasAddCommand(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		inHelperProcess := os.Getenv("GO_TEST_HELPER_PROCESS") == "1"
+		if inHelperProcess {
+			testName := os.Getenv("GO_TEST_TEST_NAME")
+			if !strings.EqualFold(testName, tt.name) {
+				continue
+			}
+		}
 		t.Run(tt.name, func(t *testing.T) {
+			if !tt.want && !inHelperProcess {
+				tstp := helperProcess("TestAliasAddCommand", tt.name)
+				out, _ := tstp.CombinedOutput()
+				fmt.Println(string(out))
+				assert.NotEqual(t, 0, tstp.ProcessState.ExitCode())
+				assert.Contains(t, string(out), tt.args.errorText)
+				return
+			}
+
 			// arrange
 			fs := afero.NewMemMapFs()
 			fn := hosts.EtcHosts.Path()
@@ -204,10 +241,13 @@ func TestAliasAddCommand(t *testing.T) {
 			f.WriteString(sdata)
 			f.Close()
 
-			expectData, err := os.ReadFile(tt.args.outputFile)
-			if err != nil {
-				t.Errorf("Can't read %v", tt.args.outputFile)
-				t.FailNow()
+			expectData := bytes.NewBufferString("").Bytes()
+			if tt.args.outputFile != "" {
+				expectData, err = os.ReadFile(tt.args.outputFile)
+				if err != nil {
+					t.Errorf("Can't read %v", tt.args.outputFile)
+					t.FailNow()
+				}
 			}
 			expectRes := string(expectData)
 			expectOut := tt.args.stdout
@@ -217,6 +257,7 @@ func TestAliasAddCommand(t *testing.T) {
 			out := &strings.Builder{}
 
 			cmd := NewCmdAliasAdd()
+			cmd.SilenceErrors = true
 			cmd.SetArgs(tt.args.args)
 			cmd.SetIn(in)
 			cmd.SetOutput(out)
@@ -241,4 +282,17 @@ func TestAliasAddCommand(t *testing.T) {
 			assert.Equal(t, expectRes, string(fr))
 		})
 	}
+}
+
+func helperProcess(suite string, test string, s ...string) *exec.Cmd {
+	cs := []string{fmt.Sprintf("-test.run=%s", suite), "--"}
+	cs = append(cs, s...)
+	env := []string{
+		"GO_TEST_HELPER_PROCESS=1",
+		fmt.Sprintf("GO_TEST_SUITE_NAME=%s", suite),
+		fmt.Sprintf("GO_TEST_TEST_NAME=%s", test),
+	}
+	cmd := exec.Command(os.Args[0], cs...)
+	cmd.Env = append(env, os.Environ()...)
+	return cmd
 }
