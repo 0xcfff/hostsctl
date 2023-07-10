@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"testing"
 
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
+	"github.com/0xcfff/hostsctl/testtools"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
@@ -216,7 +216,7 @@ func TestAliasAddCommand(t *testing.T) {
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if !tt.want && !inHelperProcess {
-				tstp := helperProcess("TestAliasAddCommand", tt.name)
+				tstp := testtools.RunHelperProcess("TestAliasAddCommand", tt.name)
 				out, _ := tstp.CombinedOutput()
 				fmt.Println(string(out))
 				assert.NotEqual(t, 0, tstp.ProcessState.ExitCode())
@@ -282,17 +282,4 @@ func TestAliasAddCommand(t *testing.T) {
 			assert.Equal(t, expectRes, string(fr))
 		})
 	}
-}
-
-func helperProcess(suite string, test string, s ...string) *exec.Cmd {
-	cs := []string{fmt.Sprintf("-test.run=%s", suite), "--"}
-	cs = append(cs, s...)
-	env := []string{
-		"GO_TEST_HELPER_PROCESS=1",
-		fmt.Sprintf("GO_TEST_SUITE_NAME=%s", suite),
-		fmt.Sprintf("GO_TEST_TEST_NAME=%s", test),
-	}
-	cmd := exec.Command(os.Args[0], cs...)
-	cmd.Env = append(env, os.Environ()...)
-	return cmd
 }

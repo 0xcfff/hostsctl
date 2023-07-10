@@ -37,7 +37,7 @@ func NewCmdAliasAdd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&opt.blockIdOrName, "block", "b", opt.blockIdOrName, "Block id or name")
 	cmd.Flags().StringVarP(&opt.comment, "comment", "c", opt.comment, "Alias comment")
-	cmd.Flags().BoolVarP(&opt.force, "force", "", opt.force, "Enforces creation of a named IP block if it is missing")
+	cmd.Flags().BoolVarP(&opt.force, "force", "f", opt.force, "Enforces creation of a named IP block if it is missing")
 
 	return cmd
 }
@@ -54,14 +54,14 @@ func (opt *AliasAddOptions) Validate() error {
 }
 
 func (opt *AliasAddOptions) Execute() error {
+	aliases, err := readIpAliases(opt)
+	cobra.CheckErr(err)
+
 	src := hosts.NewSource(hosts.EtcHosts.Path(), common.FileSystem(opt.command.Context()))
 	doc, err := src.Load()
 	cobra.CheckErr(err)
 
 	ipsBlock, err := findOrCreateTargetAliasesBlock(doc, opt.blockIdOrName, opt.force)
-	cobra.CheckErr(err)
-
-	aliases, err := readIpAliases(opt)
 	cobra.CheckErr(err)
 
 	for _, a := range aliases {
@@ -91,7 +91,7 @@ func readIpAliases(opt *AliasAddOptions) ([]*dom.IPAliasesEntry, error) {
 func readIpAliasFromArgs(opt *AliasAddOptions) (*dom.IPAliasesEntry, error) {
 	args := opt.command.Flags().Args()
 	if len(args) < 2 {
-		return nil, errors.New("no data provided in args")
+		return nil, common.ErrNotEnoughArguments
 	}
 	if !iptools.IsIP(args[0]) {
 		return nil, fmt.Errorf("%s is not an IP", args[0])
