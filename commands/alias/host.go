@@ -11,6 +11,7 @@ func NewCmdAlias() *cobra.Command {
 	}
 	cmd.AddCommand(NewCmdAliasList())
 	cmd.AddCommand(NewCmdAliasAdd())
+	cmd.AddCommand(NewCmdAliasDelete())
 
 	return cmd
 }

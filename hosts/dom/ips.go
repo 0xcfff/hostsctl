@@ -93,15 +93,23 @@ func (blk *IPAliasesBlock) EntriesByIP(ip string) []*IPAliasesEntry {
 	return found
 }
 
-func (blk *IPAliasesBlock) EntriesByAlias(aliase string) []*IPAliasesEntry {
+func (blk *IPAliasesBlock) EntriesByAlias(alias string) []*IPAliasesEntry {
 	found := make([]*IPAliasesEntry, 0)
 	for _, ent := range blk.entries {
-		if slices.Contains(ent.aliases, aliase) {
+		if slices.Contains(ent.aliases, alias) {
 			found = append(found, ent)
 			break
 		}
 	}
 	return found
+}
+
+func (blk *IPAliasesBlock) EntriesByIPOrAlias(ipOrAlias string) []*IPAliasesEntry {
+	entries := blk.EntriesByIP(ipOrAlias)
+	if len(entries) == 0 {
+		entries = blk.EntriesByAlias(ipOrAlias)
+	}
+	return entries
 }
 
 func (blk *IPAliasesBlock) AddEntry(entry *IPAliasesEntry) {

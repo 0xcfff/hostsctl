@@ -5,6 +5,8 @@ import (
 
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
+	"github.com/0xcfff/hostsctl/hosts/dom"
+	"github.com/0xcfff/hostsctl/iptools"
 	"github.com/spf13/cobra"
 )
 
@@ -48,24 +50,66 @@ func (opt *AliasDeleteOptions) Validate() error {
 
 func (opt *AliasDeleteOptions) Execute() error {
 
-	ipOrAlias, err := readIpOrAlias(opt)
+	ipOrAlias, err := readIpOrAliasArg(opt)
 	cobra.CheckErr(err)
 
 	src := hosts.NewSource(hosts.EtcHosts.Path(), common.FileSystem(opt.command.Context()))
 	doc, err := src.Load()
 	cobra.CheckErr(err)
 
-	ipsBlock, err := findOrCreateTargetAliasesBlock(doc, opt.blockIdOrName, false)
+	entriesMap := make(map[int][]*dom.IPAliasesEntry)
+	for idx, blk := range doc.IPBlocks() {
+		var ipsEntries []*dom.IPAliasesEntry = blk.EntriesByIPOrAlias(ipOrAlias)
+		if len(ipsEntries) > 0 {
+			entriesMap[idx] = ipsEntries
+		}
+	}
+
+	err = validateDelete(entriesMap, ipOrAlias, opt.force)
 	cobra.CheckErr(err)
 
 	// TODO: Implement this
-	_ = ipOrAlias
-	_ = ipsBlock
+	return nil
+}
+
+func validateDelete(foundEntries map[int][]*dom.IPAliasesEntry, ipOrAlias string, forceFlag bool) error {
+
+	isAlias := !iptools.IsIP(ipOrAlias)
+
+	entriesCount := 0
+	systemCount := 0
+
+	for _, entries := range foundEntries {
+		entriesCount += len(entries)
+
+		for _, ipe := range entries {
+			if isAlias {
+				if iptools.IsSystemAlias(ipe.IP(), ipOrAlias) {
+					systemCount += 1
+				}
+			} else {
+				for _, alias := range ipe.Aliases() {
+					if iptools.IsSystemAlias(ipOrAlias, alias) {
+						systemCount += 1
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if systemCount > 0 && !forceFlag {
+		return fmt.Errorf("%d of %d entries is system", systemCount, entriesCount)
+	}
+
+	if entriesCount > 1 && !forceFlag {
+		return fmt.Errorf("%d entries found; %w", entriesCount, common.ErrTooManyEntries)
+	}
 
 	return nil
 }
 
-func readIpOrAlias(opt *AliasDeleteOptions) (string, error) {
+func readIpOrAliasArg(opt *AliasDeleteOptions) (string, error) {
 	args := opt.command.Flags().Args()
 	if len(args) < 1 {
 		return "", common.ErrIpOrAliasExpected
