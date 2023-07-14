@@ -116,6 +116,16 @@ func (blk *IPAliasesBlock) AddEntry(entry *IPAliasesEntry) {
 	blk.entries = append(blk.entries, entry)
 }
 
+func (blk *IPAliasesBlock) RemoveEntry(entry *IPAliasesEntry) bool {
+	condition := func(it *IPAliasesEntry) bool { return it == entry }
+	newEntries, changed := removeElements(blk.entries, condition)
+	if changed {
+		blk.entries = newEntries
+		blk.changed = true
+	}
+	return changed
+}
+
 func NewIPAliasesBlock() *IPAliasesBlock {
 	return &IPAliasesBlock{
 		changed: true,
