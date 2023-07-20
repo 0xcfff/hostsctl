@@ -42,7 +42,7 @@ func NewCommentsBlock(commentsText string) *CommentsBlock {
 
 func newCommentsBlockFromLines(comments []*syntax.CommentLine) *CommentsBlock {
 	// Aggregate comments lines into one text string
-	newLine := iotools.OSDependendNewLine()
+	newLine := iotools.NewLine
 	sb := &strings.Builder{}
 	first := true
 	for _, s := range comments {

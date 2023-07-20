@@ -192,7 +192,7 @@ func parseNFillIPsBlockHeader(block *IPAliasesBlock, autoId int) {
 		}
 
 		// Construct comment text
-		newLine := iotools.OSDependendNewLine()
+		newLine := iotools.NewLine
 		sb := &strings.Builder{}
 		first := true
 		for _, s := range blockComment {

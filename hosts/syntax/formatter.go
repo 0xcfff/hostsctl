@@ -43,8 +43,11 @@ func format(w io.Writer, doc *Document, fmt FormatMode) error {
 			}
 			cw := calculateAliasesActualColumnWidths(line, el, ctx.autoformatSettings)
 			ufp := translateColumnsToAliasesFormattingParams(cw, ctx.autoformatSettings)
-			ctx.lastAliasFormatParams.updateFrom(ufp)
+			// TODO: Add last line only format
+			ctx.globalAliasFormatParams.updateFrom(ufp)
+			ctx.lastAliasFormatParams = ufp
 		default:
+			ctx.lastAliasFormatParams = newAliasFormattingParams()
 			if it.HasPreformattedText() {
 				line = it.PreformattedLineText()
 			} else {

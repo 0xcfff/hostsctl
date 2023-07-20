@@ -37,7 +37,7 @@ func parseLines(s *bufio.Scanner) ([]Element, error) {
 
 		element, err := parseLine(lineIndex, rawText)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing line %v, %w", lineIndex, err)
+			return nil, fmt.Errorf("error parsing line %v, %w", lineIndex, err)
 		}
 
 		elements = append(elements, element)

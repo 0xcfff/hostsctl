@@ -77,6 +77,18 @@ func TestAliasDeleteCommand(t *testing.T) {
 			},
 			true,
 		},
+		{
+			"four-blocks - by alias from multialias line",
+			args{
+				[]string{"awards.example.com"},
+				"",
+				"testdata/four-blocks.txt",
+				"testdata/delete/four-blocks_one-alias-multiline_result.txt",
+				"",
+				"",
+			},
+			true,
+		},
 		// {
 		// 	"one line - stdin",
 		// 	args{

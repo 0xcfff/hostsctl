@@ -19,6 +19,14 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/hostsctl",
             "args": ["alias", "add", "127.0.0.1", "test.my.local", "#", "test", "--", "a", "b", "c"]
+        },
+        {
+            "name": "Launch Package - Delete",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/hostsctl",
+            "args": ["alias", "delete", "ff02::2"]
         }
     ]
 }
