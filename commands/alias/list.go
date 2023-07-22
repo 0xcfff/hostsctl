@@ -190,7 +190,7 @@ func writeDataAsHosts(opt *AliasListOptions, data *dom.Document) error {
 
 func writeDataAsJson(opt *AliasListOptions, data *dom.Document) error {
 	m := NewHostModels(data, opt.outputGrouping)
-	buff, err := json.MarshalIndent(m, "", "  ")
+	buff, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}

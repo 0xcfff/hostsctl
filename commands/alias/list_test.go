@@ -145,6 +145,34 @@ func TestAliasListCommand(t *testing.T) {
 			},
 			true,
 		},
+		{
+			"json one line",
+			args{
+				[]string{"-o", "json"},
+				"testdata/one-ip.txt",
+				"testdata/list/json_one-ip.txt",
+			},
+			true,
+		},
+		// yaml set of tests
+		{
+			"yaml empty",
+			args{
+				[]string{"-o", "yaml"},
+				"testdata/empty.txt",
+				"testdata/list/yaml_empty.txt",
+			},
+			true,
+		},
+		{
+			"yaml one line",
+			args{
+				[]string{"-o", "yaml"},
+				"testdata/one-ip.txt",
+				"testdata/list/yaml_one-ip.txt",
+			},
+			true,
+		},
 	}
 
 	for _, tt := range tests {

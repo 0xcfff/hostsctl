@@ -1,0 +1,18 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "shell: coverage",
+            "command": "scripts/coverage.sh",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$go"
+            ],
+            "group": "test",
+            "detail": "cd /home/thief/projects/hostsctl; go test ${fileDirname}"
+        }
+    ],
+    "version": "2.0.0"
+}
