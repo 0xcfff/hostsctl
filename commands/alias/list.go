@@ -83,12 +83,12 @@ func (opt *AliasListOptions) Complete(cmd *cobra.Command, args []string) error {
 	var ok bool
 	opt.outputFormat, ok = formats[opt.output]
 	if !ok {
-		return fmt.Errorf("--output %v of list command does not support specified output format", opt.output)
+		return fmt.Errorf("value %v is not support; %w", opt.output, common.ErrNotSupportedOutputFormat)
 	}
 
 	opt.outputGrouping, ok = groupings[opt.arrange]
 	if !ok {
-		return fmt.Errorf("--grouping %v of list command does not support specified value", opt.arrange)
+		return fmt.Errorf("value %v is not support; %w", opt.arrange, common.ErrWrongArgumentValue)
 	}
 
 	return nil

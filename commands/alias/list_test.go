@@ -1,13 +1,16 @@
 package alias
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
+	"github.com/0xcfff/hostsctl/testtools"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,6 +20,7 @@ func TestAliasListCommand(t *testing.T) {
 		args       []string
 		inputFile  string
 		outputFile string
+		errorText  string
 	}
 	tests := []struct {
 		name string
@@ -30,6 +34,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{},
 				"testdata/empty.txt",
 				"testdata/list/default_empty.txt",
+				"",
 			},
 			true,
 		},
@@ -39,6 +44,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{},
 				"testdata/one-ip.txt",
 				"testdata/list/default_one-ip.txt",
+				"",
 			},
 			true,
 		},
@@ -48,6 +54,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{},
 				"testdata/two-sys-blocks.txt",
 				"testdata/list/default_two-sys-blocks.txt",
+				"",
 			},
 			true,
 		},
@@ -58,6 +65,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "short"},
 				"testdata/empty.txt",
 				"testdata/list/short_empty.txt",
+				"",
 			},
 			true,
 		},
@@ -67,6 +75,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "short"},
 				"testdata/one-ip.txt",
 				"testdata/list/short_one-ip.txt",
+				"",
 			},
 			true,
 		},
@@ -76,6 +85,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "short"},
 				"testdata/two-sys-blocks.txt",
 				"testdata/list/short_two-sys-blocks.txt",
+				"",
 			},
 			true,
 		},
@@ -86,6 +96,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "wide"},
 				"testdata/empty.txt",
 				"testdata/list/wide_empty.txt",
+				"",
 			},
 			true,
 		},
@@ -95,6 +106,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "wide"},
 				"testdata/one-ip.txt",
 				"testdata/list/wide_one-ip.txt",
+				"",
 			},
 			true,
 		},
@@ -104,6 +116,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "wide"},
 				"testdata/two-sys-blocks.txt",
 				"testdata/list/wide_two-sys-blocks.txt",
+				"",
 			},
 			true,
 		},
@@ -114,6 +127,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "plain"},
 				"testdata/empty.txt",
 				"testdata/list/plain_empty.txt",
+				"",
 			},
 			true,
 		},
@@ -123,6 +137,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "plain"},
 				"testdata/one-ip.txt",
 				"testdata/list/plain_one-ip.txt",
+				"",
 			},
 			true,
 		},
@@ -132,6 +147,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "plain"},
 				"testdata/two-sys-blocks.txt",
 				"testdata/list/plain_two-sys-blocks.txt",
+				"",
 			},
 			true,
 		},
@@ -142,6 +158,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "json"},
 				"testdata/empty.txt",
 				"testdata/list/json_empty.txt",
+				"",
 			},
 			true,
 		},
@@ -151,6 +168,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "json"},
 				"testdata/one-ip.txt",
 				"testdata/list/json_one-ip.txt",
+				"",
 			},
 			true,
 		},
@@ -161,6 +179,7 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "yaml"},
 				"testdata/empty.txt",
 				"testdata/list/yaml_empty.txt",
+				"",
 			},
 			true,
 		},
@@ -170,13 +189,83 @@ func TestAliasListCommand(t *testing.T) {
 				[]string{"-o", "yaml"},
 				"testdata/one-ip.txt",
 				"testdata/list/yaml_one-ip.txt",
+				"",
 			},
 			true,
+		},
+		// arrangement cases
+		{
+			"arange - two blocks - raw",
+			args{
+				[]string{"-a", "raw"},
+				"testdata/two-mixed-blocks.txt",
+				"testdata/list/arange_two-mixed-blocks_raw.txt",
+				"",
+			},
+			true,
+		},
+		{
+			"arange - two blocks - group",
+			args{
+				[]string{"-a", "group"},
+				"testdata/two-mixed-blocks.txt",
+				"testdata/list/arange_two-mixed-blocks_group.txt",
+				"",
+			},
+			true,
+		},
+		{
+			"arange - two blocks - ungroup",
+			args{
+				[]string{"-a", "ungroup"},
+				"testdata/two-mixed-blocks.txt",
+				"testdata/list/arange_two-mixed-blocks_ungroup.txt",
+				"",
+			},
+			true,
+		},
+
+		// wrong arguments check
+		{
+			"error - wrong format",
+			args{
+				[]string{"-o", "not_supported"},
+				"testdata/empty.txt",
+				"",
+				"Error: value not_supported is not support; not supported output format",
+			},
+			false,
+		},
+		{
+			"error - wrong grouping",
+			args{
+				[]string{"-a", "not_supported"},
+				"testdata/empty.txt",
+				"",
+				"Error: value not_supported is not support; wrong argument value",
+			},
+			false,
 		},
 	}
 
 	for _, tt := range tests {
+		inHelperProcess := os.Getenv("GO_TEST_HELPER_PROCESS") == "1"
+		if inHelperProcess {
+			testName := os.Getenv("GO_TEST_TEST_NAME")
+			if !strings.EqualFold(testName, tt.name) {
+				continue
+			}
+		}
 		t.Run(tt.name, func(t *testing.T) {
+			if !tt.want && !inHelperProcess {
+				tstp := testtools.RunHelperProcess("TestAliasListCommand", tt.name)
+				out, _ := tstp.CombinedOutput()
+				fmt.Println(string(out))
+				assert.NotEqual(t, 0, tstp.ProcessState.ExitCode())
+				assert.Contains(t, string(out), tt.args.errorText)
+				return
+			}
+
 			// arrange
 			fs := afero.NewMemMapFs()
 			fn := hosts.EtcHosts.Path()
@@ -194,10 +283,13 @@ func TestAliasListCommand(t *testing.T) {
 			f.WriteString(sdata)
 			f.Close()
 
-			expectData, err := os.ReadFile(tt.args.outputFile)
-			if err != nil {
-				t.Errorf("Can't read %v", tt.args.outputFile)
-				t.FailNow()
+			expectData := bytes.NewBufferString("").Bytes()
+			if tt.args.outputFile != "" {
+				expectData, err = os.ReadFile(tt.args.outputFile)
+				if err != nil {
+					t.Errorf("Can't read %v", tt.args.outputFile)
+					t.FailNow()
+				}
 			}
 			expectOut := string(expectData)
 
@@ -223,36 +315,6 @@ func TestAliasListCommand(t *testing.T) {
 
 			s := out.String()
 			assert.Equal(t, expectOut, s)
-
-			// Sample output:
-			// Add GRP and SYS columns to output
-			// GRP  SYS  IP          ALIAS
-			// [+]   +   127.0.0.1   localhost
-			//           127.0.0.2   router
-			//           127.0.0.3   printer
-			// [+]   +   ::1         ip6-localhost
-			//       +   ::1         ip6-loopback
-			//       +   e00::0      ip6-localnet
-			//       +   e00::0      ip6-mcastprefix
-			//       +   e00::0      ip6-allnodes
-			//       +   e00::0      ip6-allrouters
-			// [+]       10.0.0.101  hhost1
-			//           10.0.0.102  hhost2
-
-			// Sample output:
-			// Add GRP and SYS columns to output
-			// GRP  SYS  IP          ALIAS
-			// [1]   +   127.0.0.1   localhost
-			//           127.0.0.2   router
-			//           127.0.0.3   printer
-			// [2]   +   ::1         ip6-localhost
-			//       +   ::1         ip6-loopback
-			//       +   e00::0      ip6-localnet
-			//       +   e00::0      ip6-mcastprefix
-			//       +   e00::0      ip6-allnodes
-			//       +   e00::0      ip6-allrouters
-			// [3]       10.0.0.101  hhost1
-			//           10.0.0.102  hhost2
 		})
 	}
 }
