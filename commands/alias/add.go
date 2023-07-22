@@ -165,7 +165,7 @@ func findOrCreateTargetAliasesBlock(doc *dom.Document, ipBlockIdOrName string, c
 	}
 
 	// #2 try to find last ips block
-	if ipsBlock == nil {
+	if ipsBlock == nil && ipBlockIdOrName == "" {
 		blocks := doc.IPBlocks()
 
 		if len(blocks) > 0 {
@@ -201,7 +201,7 @@ func findOrCreateTargetAliasesBlock(doc *dom.Document, ipBlockIdOrName string, c
 		ipsBlock = dom.NewIPAliasesBlock()
 		if ipBlockIdOrName != "" {
 			v, err := strconv.Atoi(ipBlockIdOrName)
-			if err != nil {
+			if err == nil {
 				ipsBlock.SetId(v)
 			} else {
 				ipsBlock.SetName(ipBlockIdOrName)
