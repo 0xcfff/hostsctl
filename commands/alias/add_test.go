@@ -89,6 +89,69 @@ func TestAliasAddCommand(t *testing.T) {
 			},
 			true,
 		},
+		// add to specific block
+		{
+			"add - 3rd block + no block specified",
+			args{
+				[]string{"192.168.100.100", "local-service"},
+				"",
+				"testdata/four-blocks.txt",
+				"testdata/add/four-blocks_one-alias_no-block_result.txt",
+				"",
+				"",
+			},
+			true,
+		},
+		{
+			"add - 3rd block + by id",
+			args{
+				[]string{"192.168.100.100", "local-service", "-b", "3"},
+				"",
+				"testdata/four-blocks.txt",
+				"testdata/add/four-blocks_one-alias_3rd-block_result.txt",
+				"",
+				"",
+			},
+			true,
+		},
+		{
+			"add - 3rd block + by name",
+			args{
+				[]string{"192.168.100.100", "local-service", "-b", "pet-prj1"},
+				"",
+				"testdata/four-blocks.txt",
+				"testdata/add/four-blocks_one-alias_3rd-block_result.txt",
+				"",
+				"",
+			},
+			true,
+		},
+		{
+			"add - 5th block + by id",
+			args{
+				[]string{"192.168.100.100", "local-service", "-b", "5", "--force"},
+				"",
+				"testdata/four-blocks.txt",
+				"testdata/add/four-blocks_one-alias-by-id_5th-block_result.txt",
+				"",
+				"",
+			},
+			true,
+		},
+		{
+			"add - 5th block + by name",
+			args{
+				[]string{"192.168.100.100", "local-service", "-b", "prj-pet009", "--force"},
+				"",
+				"testdata/four-blocks.txt",
+				"testdata/add/four-blocks_one-alias-by-name_5th-block_result.txt",
+				"",
+				"",
+			},
+			true,
+		},
+
+		// errors cases
 		{
 			"one line - args + missing block",
 			args{
