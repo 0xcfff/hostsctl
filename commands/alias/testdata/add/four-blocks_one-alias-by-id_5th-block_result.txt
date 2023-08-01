@@ -20,4 +20,4 @@ ff02::2 ip6-allrouters
 192.168.100.54  statistics.example.com awards.example.com score.example.com
 
 # [5]
-192.168.100.100 local-service
+192.168.100.100  local-service

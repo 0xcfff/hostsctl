@@ -19,5 +19,5 @@ ff02::2 ip6-allrouters
 192.168.100.54  reports.example.com
 192.168.100.54  statistics.example.com awards.example.com score.example.com
 
-# [*] - prj-pet009
-192.168.100.100 local-service
+# [*] prj-pet009
+192.168.100.100  local-service

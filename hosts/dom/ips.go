@@ -128,6 +128,8 @@ func (blk *IPAliasesBlock) RemoveEntry(entry *IPAliasesEntry) bool {
 
 func NewIPAliasesBlock() *IPAliasesBlock {
 	return &IPAliasesBlock{
+		id:      idNotSet,
+		autoId:  idNotSet,
 		changed: true,
 	}
 }

@@ -93,6 +93,10 @@ func (*EmptyLine) formatLine() string {
 	return ""
 }
 
+func NewEmptyLine() *EmptyLine {
+	return &EmptyLine{}
+}
+
 // Represents a line of IP to domain name mapping
 type IPMappingLine struct {
 	elementBase

@@ -2,6 +2,8 @@ package dom
 
 import (
 	"bufio"
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
@@ -15,20 +17,19 @@ func constructSyntax(doc *Document) *syntax.Document {
 		switch block.Type() {
 		case IPList:
 			bels := constructAliases(block.(*IPAliasesBlock))
+			if len(elements) > 0 && elements[len(elements)-1].Type() != syntax.Empty {
+				elements = append(elements, syntax.NewEmptyLine())
+			}
 			elements = append(elements, bels...)
-			break
 		case Comments:
 			bels := constructComments(block.(*CommentsBlock))
 			elements = append(elements, bels...)
-			break
 		case Blanks:
 			bels := constructBlanks(block.(*BlanksBlock))
 			elements = append(elements, bels...)
-			break
 		case Unknown:
 			bels := constructUnknown(block.(*UnrecognizedBlock))
 			elements = append(elements, bels...)
-			break
 		}
 	}
 
@@ -37,8 +38,50 @@ func constructSyntax(doc *Document) *syntax.Document {
 
 func constructAliases(block *IPAliasesBlock) []syntax.Element {
 	elements := make([]syntax.Element, 0)
-	for _, el := range block.origHeader {
-		elements = append(elements, el)
+	if block.origHeader != nil {
+		for _, el := range block.origHeader {
+			elements = append(elements, el)
+		}
+	} else if block.id != idNotSet || block.name != "" || block.note != "" {
+		sb := strings.Builder{}
+
+		// format block id and name prefix
+		blockId := "*"
+		if block.id != idNotSet {
+			blockId = strconv.Itoa(block.id)
+		}
+		sb.WriteString(fmt.Sprintf("[%s]", blockId))
+		if block.name != "" {
+			sb.WriteRune(' ')
+			sb.WriteString(block.name)
+		}
+
+		// format notes
+		firstLine := true
+		s := bufio.NewScanner(strings.NewReader(block.note))
+		s.Split(iotools.LinesSplitterRespectEndNewLineFunc())
+		lines := make([]string, 0)
+		for {
+			if ok := s.Scan(); !ok {
+				break
+			}
+			lines = append(lines, s.Text())
+		}
+		for _, l := range lines {
+			lt := l
+			if firstLine {
+				lt = fmt.Sprintf("%s - %s", sb.String(), l)
+				firstLine = false
+			}
+			el := syntax.NewCommentsLine(lt)
+			elements = append(elements, el)
+		}
+
+		// ensure header element was added even if no comments for the block
+		if len(elements) == 0 {
+			el := syntax.NewCommentsLine(sb.String())
+			elements = append(elements, el)
+		}
 	}
 	for _, el := range block.entries {
 		ipAlias := el.origElement
