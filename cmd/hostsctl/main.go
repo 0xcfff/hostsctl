@@ -3,8 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/0xcfff/hostsctl/commands/alias"
-	"github.com/0xcfff/hostsctl/commands/version"
+	"github.com/0xcfff/hostsctl/commands"
 	"github.com/spf13/cobra"
 )
 
@@ -21,13 +20,5 @@ func main() {
 }
 
 func init() {
-	rootCmd = &cobra.Command{
-		Short: "hostsctl manages ip to hostname mappings (usually stored in /etc/hosts)",
-		Run: func(cmd *cobra.Command, args []string) {
-			cobra.CheckErr(cmd.Help())
-		},
-	}
-
-	rootCmd.AddCommand(version.NewCmdVersion())
-	rootCmd.AddCommand(alias.NewCmdAlias())
+	rootCmd = commands.NewCmdRoot()
 }
