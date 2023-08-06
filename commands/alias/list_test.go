@@ -1,320 +1,273 @@
 package alias
 
 import (
-	"bytes"
-	"context"
-	"fmt"
-	"os"
-	"strings"
 	"testing"
 
-	"github.com/0xcfff/hostsctl/commands/common"
-	"github.com/0xcfff/hostsctl/hosts"
-	"github.com/0xcfff/hostsctl/testtools"
-	"github.com/spf13/afero"
-	"github.com/stretchr/testify/assert"
+	"github.com/0xcfff/hostsctl/commands/cmdtest"
+	"github.com/spf13/cobra"
 )
 
 func TestAliasListCommand(t *testing.T) {
-	type args struct {
-		args       []string
-		inputFile  string
-		outputFile string
-		errorText  string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
+	tests := []cmdtest.ITTest{
 		// default
 		{
-			"default empty",
-			args{
-				[]string{},
-				"testdata/empty.txt",
-				"testdata/list/default_empty.txt",
-				"",
+			Name: "default empty",
+			Args: cmdtest.ITArgs{
+				Args:       []string{},
+				InputFile:  "testdata/empty.txt",
+				StdoutFile: "testdata/list/default_empty.txt",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"default one line",
-			args{
-				[]string{},
-				"testdata/one-ip.txt",
-				"testdata/list/default_one-ip.txt",
-				"",
+			Name: "default one line",
+			Args: cmdtest.ITArgs{
+				Args:       []string{},
+				Stdin:      "",
+				InputFile:  "testdata/one-ip.txt",
+				StdoutFile: "testdata/list/default_one-ip.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"default two blocks",
-			args{
-				[]string{},
-				"testdata/two-sys-blocks.txt",
-				"testdata/list/default_two-sys-blocks.txt",
-				"",
+			Name: "default two blocks",
+			Args: cmdtest.ITArgs{
+				Args:       []string{},
+				Stdin:      "",
+				InputFile:  "testdata/two-sys-blocks.txt",
+				StdoutFile: "testdata/list/default_two-sys-blocks.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		// short
 		{
-			"plain empty",
-			args{
-				[]string{"-o", "short"},
-				"testdata/empty.txt",
-				"testdata/list/short_empty.txt",
-				"",
+			Name: "plain empty",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "short"},
+				Stdin:      "",
+				InputFile:  "testdata/empty.txt",
+				StdoutFile: "testdata/list/short_empty.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"plain one line",
-			args{
-				[]string{"-o", "short"},
-				"testdata/one-ip.txt",
-				"testdata/list/short_one-ip.txt",
-				"",
+			Name: "plain one line",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "short"},
+				Stdin:      "",
+				InputFile:  "testdata/one-ip.txt",
+				StdoutFile: "testdata/list/short_one-ip.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"plain two blocks",
-			args{
-				[]string{"-o", "short"},
-				"testdata/two-sys-blocks.txt",
-				"testdata/list/short_two-sys-blocks.txt",
-				"",
+			Name: "plain two blocks",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "short"},
+				Stdin:      "",
+				InputFile:  "testdata/two-sys-blocks.txt",
+				StdoutFile: "testdata/list/short_two-sys-blocks.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		// wide
 		{
-			"wide empty",
-			args{
-				[]string{"-o", "wide"},
-				"testdata/empty.txt",
-				"testdata/list/wide_empty.txt",
-				"",
+			Name: "wide empty",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "wide"},
+				Stdin:      "",
+				InputFile:  "testdata/empty.txt",
+				StdoutFile: "testdata/list/wide_empty.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"wide one line",
-			args{
-				[]string{"-o", "wide"},
-				"testdata/one-ip.txt",
-				"testdata/list/wide_one-ip.txt",
-				"",
+			Name: "wide one line",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "wide"},
+				Stdin:      "",
+				InputFile:  "testdata/one-ip.txt",
+				StdoutFile: "testdata/list/wide_one-ip.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"wide two blocks",
-			args{
-				[]string{"-o", "wide"},
-				"testdata/two-sys-blocks.txt",
-				"testdata/list/wide_two-sys-blocks.txt",
-				"",
+			Name: "wide two blocks",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "wide"},
+				Stdin:      "",
+				InputFile:  "testdata/two-sys-blocks.txt",
+				StdoutFile: "testdata/list/wide_two-sys-blocks.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		// plain
 		{
-			"plain empty",
-			args{
-				[]string{"-o", "plain"},
-				"testdata/empty.txt",
-				"testdata/list/plain_empty.txt",
-				"",
+			Name: "plain empty",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "plain"},
+				Stdin:      "",
+				InputFile:  "testdata/empty.txt",
+				StdoutFile: "testdata/list/plain_empty.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"plain one line",
-			args{
-				[]string{"-o", "plain"},
-				"testdata/one-ip.txt",
-				"testdata/list/plain_one-ip.txt",
-				"",
+			Name: "plain one line",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "plain"},
+				Stdin:      "",
+				InputFile:  "testdata/one-ip.txt",
+				StdoutFile: "testdata/list/plain_one-ip.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"plain two blocks",
-			args{
-				[]string{"-o", "plain"},
-				"testdata/two-sys-blocks.txt",
-				"testdata/list/plain_two-sys-blocks.txt",
-				"",
+			Name: "plain two blocks",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "plain"},
+				Stdin:      "",
+				InputFile:  "testdata/two-sys-blocks.txt",
+				StdoutFile: "testdata/list/plain_two-sys-blocks.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		// json set of tests
 		{
-			"json empty",
-			args{
-				[]string{"-o", "json"},
-				"testdata/empty.txt",
-				"testdata/list/json_empty.txt",
-				"",
+			Name: "json empty",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "json"},
+				Stdin:      "",
+				InputFile:  "testdata/empty.txt",
+				StdoutFile: "testdata/list/json_empty.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"json one line",
-			args{
-				[]string{"-o", "json"},
-				"testdata/one-ip.txt",
-				"testdata/list/json_one-ip.txt",
-				"",
+			Name: "json one line",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "json"},
+				Stdin:      "",
+				InputFile:  "testdata/one-ip.txt",
+				StdoutFile: "testdata/list/json_one-ip.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		// yaml set of tests
 		{
-			"yaml empty",
-			args{
-				[]string{"-o", "yaml"},
-				"testdata/empty.txt",
-				"testdata/list/yaml_empty.txt",
-				"",
+			Name: "yaml empty",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "yaml"},
+				Stdin:      "",
+				InputFile:  "testdata/empty.txt",
+				StdoutFile: "testdata/list/yaml_empty.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"yaml one line",
-			args{
-				[]string{"-o", "yaml"},
-				"testdata/one-ip.txt",
-				"testdata/list/yaml_one-ip.txt",
-				"",
+			Name: "yaml one line",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "yaml"},
+				Stdin:      "",
+				InputFile:  "testdata/one-ip.txt",
+				StdoutFile: "testdata/list/yaml_one-ip.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		// arrangement cases
 		{
-			"arange - two blocks - raw",
-			args{
-				[]string{"-a", "raw"},
-				"testdata/two-mixed-blocks.txt",
-				"testdata/list/arange_two-mixed-blocks_raw.txt",
-				"",
+			Name: "arange - two blocks - raw",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-a", "raw"},
+				Stdin:      "",
+				InputFile:  "testdata/two-mixed-blocks.txt",
+				StdoutFile: "testdata/list/arange_two-mixed-blocks_raw.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"arange - two blocks - group",
-			args{
-				[]string{"-a", "group"},
-				"testdata/two-mixed-blocks.txt",
-				"testdata/list/arange_two-mixed-blocks_group.txt",
-				"",
+			Name: "arange - two blocks - group",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-a", "group"},
+				Stdin:      "",
+				InputFile:  "testdata/two-mixed-blocks.txt",
+				StdoutFile: "testdata/list/arange_two-mixed-blocks_group.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 		{
-			"arange - two blocks - ungroup",
-			args{
-				[]string{"-a", "ungroup"},
-				"testdata/two-mixed-blocks.txt",
-				"testdata/list/arange_two-mixed-blocks_ungroup.txt",
-				"",
+			Name: "arange - two blocks - ungroup",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-a", "ungroup"},
+				Stdin:      "",
+				InputFile:  "testdata/two-mixed-blocks.txt",
+				StdoutFile: "testdata/list/arange_two-mixed-blocks_ungroup.txt",
+				Stdout:     "",
+				ErrorText:  "",
 			},
-			true,
+			Want: true,
 		},
 
 		// wrong arguments check
 		{
-			"error - wrong format",
-			args{
-				[]string{"-o", "not_supported"},
-				"testdata/empty.txt",
-				"",
-				"Error: value not_supported is not support; not supported output format",
+			Name: "error - wrong format",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-o", "not_supported"},
+				Stdin:      "",
+				InputFile:  "testdata/empty.txt",
+				OutputFile: "",
+				Stdout:     "",
+				ErrorText:  "Error: value not_supported is not support; not supported output format",
 			},
-			false,
+			Want: false,
 		},
 		{
-			"error - wrong grouping",
-			args{
-				[]string{"-a", "not_supported"},
-				"testdata/empty.txt",
-				"",
-				"Error: value not_supported is not support; wrong argument value",
+			Name: "error - wrong grouping",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-a", "not_supported"},
+				Stdin:      "",
+				InputFile:  "testdata/empty.txt",
+				OutputFile: "",
+				Stdout:     "",
+				ErrorText:  "Error: value not_supported is not support; wrong argument value",
 			},
-			false,
+			Want: false,
 		},
 	}
 
-	for _, tt := range tests {
-		inHelperProcess := os.Getenv("GO_TEST_HELPER_PROCESS") == "1"
-		if inHelperProcess {
-			testName := os.Getenv("GO_TEST_TEST_NAME")
-			if !strings.EqualFold(testName, tt.name) {
-				continue
-			}
-		}
-		t.Run(tt.name, func(t *testing.T) {
-			if !tt.want && !inHelperProcess {
-				tstp := testtools.RunHelperProcess("TestAliasListCommand", tt.name)
-				out, _ := tstp.CombinedOutput()
-				fmt.Println(string(out))
-				assert.NotEqual(t, 0, tstp.ProcessState.ExitCode())
-				assert.Contains(t, string(out), tt.args.errorText)
-				return
-			}
-
-			// arrange
-			fs := afero.NewMemMapFs()
-			fn := hosts.EtcHosts.Path()
-			f, err := fs.Create(fn)
-			if err != nil {
-				t.Errorf("Can't create %v", fn)
-				t.FailNow()
-			}
-			data, err := os.ReadFile(tt.args.inputFile)
-			if err != nil {
-				t.Errorf("Can't read %v", tt.args.inputFile)
-				t.FailNow()
-			}
-			sdata := string(data)
-			f.WriteString(sdata)
-			f.Close()
-
-			expectData := bytes.NewBufferString("").Bytes()
-			if tt.args.outputFile != "" {
-				expectData, err = os.ReadFile(tt.args.outputFile)
-				if err != nil {
-					t.Errorf("Can't read %v", tt.args.outputFile)
-					t.FailNow()
-				}
-			}
-			expectOut := string(expectData)
-
-			ctx := common.WithCustomFilesystem(context.Background(), fs)
-			out := &strings.Builder{}
-
-			cmd := NewCmdAliasList()
-			cmd.SetArgs(tt.args.args)
-			cmd.SetOutput(out)
-			cmd.SetContext(ctx)
-
-			// act
-			c, err := cmd.ExecuteC()
-
-			// assert
-			if tt.want {
-				assert.NoError(t, err, "command should succeed")
-			} else {
-				assert.Error(t, err, "command should fail")
-			}
-
-			assert.Same(t, cmd, c)
-
-			s := out.String()
-			assert.Equal(t, expectOut, s)
-		})
-	}
+	cmdtest.RunIntergationTests(t, tests, "TestAliasListCommand", func() *cobra.Command { return NewCmdAliasList() })
 }

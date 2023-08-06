@@ -3,15 +3,15 @@ package alias
 import (
 	"testing"
 
-	"github.com/0xcfff/hostsctl/testtools"
+	"github.com/0xcfff/hostsctl/commands/cmdtest"
 	"github.com/spf13/cobra"
 )
 
 func TestAliasAddCommand(t *testing.T) {
-	tests := []testtools.ITTest{
+	tests := []cmdtest.ITTest{
 		{
 			Name: "empty - args",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test"},
 				Stdin:      "",
 				InputFile:  "testdata/empty.txt",
@@ -23,7 +23,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "one line - args",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
@@ -35,7 +35,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "one line - stdin",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				Stdin:      "127.0.0.1 my.domain.test",
 				InputFile:  "testdata/one-ip.txt",
@@ -47,7 +47,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "one line - args + comment",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test", "-c", "My custom service domain"},
 				Stdin:      "127.0.0.1 my.domain.test",
 				InputFile:  "testdata/one-ip.txt",
@@ -59,7 +59,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "one line - stdin + comment",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				Stdin:      "127.0.0.1 my.domain.test # My custom service domain",
 				InputFile:  "testdata/one-ip.txt",
@@ -72,7 +72,7 @@ func TestAliasAddCommand(t *testing.T) {
 		// add to specific block
 		{
 			Name: "add - 3rd block + no block specified",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
@@ -84,7 +84,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "add - 3rd block + by id",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "3"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
@@ -96,7 +96,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "add - 3rd block + by name",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "pet-prj1"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
@@ -108,7 +108,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "add - 5th block + by id",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "5", "--force"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
@@ -120,7 +120,7 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		{
 			Name: "add - 5th block + by name",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "prj-pet009", "--force"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
@@ -134,7 +134,7 @@ func TestAliasAddCommand(t *testing.T) {
 		// errors cases
 		{
 			Name: "one line - args + missing block",
-			Args: testtools.ITArgs{
+			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test", "-b", "local-k8s"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
@@ -146,5 +146,5 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 	}
 
-	testtools.RunIntergationTests(t, tests, "TestAliasAddCommand", func() *cobra.Command { return NewCmdAliasAdd() })
+	cmdtest.RunIntergationTests(t, tests, "TestAliasAddCommand", func() *cobra.Command { return NewCmdAliasAdd() })
 }
