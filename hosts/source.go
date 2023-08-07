@@ -93,6 +93,10 @@ func (src *Source) Save(doc *dom.Document, fm dom.FmtMode) error {
 	return nil
 }
 
+func (src *Source) Apply(handler func(path string, fs afero.Fs) error) error {
+	return handler(src.etcHostsPath, src.fs)
+}
+
 func defaultEtcHostsPath() string {
 	result := "/etc/hosts"
 	if runtime.GOOS == "windows" {
