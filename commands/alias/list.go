@@ -121,7 +121,7 @@ func (opt *AliasListOptions) Execute() error {
 }
 
 func writeDataAsText(opt *AliasListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.outputGrouping)
+	m := NewAliasesModels(data, opt.outputGrouping)
 
 	err := iotools.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 
@@ -174,7 +174,7 @@ func writeDataAsText(opt *AliasListOptions, data *dom.Document) error {
 }
 
 func writeDataAsHosts(opt *AliasListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.outputGrouping)
+	m := NewAliasesModels(data, opt.outputGrouping)
 
 	err := iotools.PrintTabbed(opt.command.OutOrStdout(), nil, 2, func(w io.Writer) error {
 		for _, ip := range m {
@@ -189,7 +189,7 @@ func writeDataAsHosts(opt *AliasListOptions, data *dom.Document) error {
 }
 
 func writeDataAsJson(opt *AliasListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.outputGrouping)
+	m := NewAliasesModels(data, opt.outputGrouping)
 	buff, err := json.Marshal(m)
 	if err != nil {
 		return err
@@ -199,7 +199,7 @@ func writeDataAsJson(opt *AliasListOptions, data *dom.Document) error {
 }
 
 func writeDataAsYaml(opt *AliasListOptions, data *dom.Document) error {
-	m := NewHostModels(data, opt.outputGrouping)
+	m := NewAliasesModels(data, opt.outputGrouping)
 	buff, err := yaml.Marshal(m)
 	if err != nil {
 		return err

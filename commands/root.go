@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/0xcfff/hostsctl/commands/alias"
+	"github.com/0xcfff/hostsctl/commands/block"
 	"github.com/0xcfff/hostsctl/commands/version"
 	"github.com/spf13/cobra"
 )
@@ -15,6 +16,7 @@ func NewCmdRoot() *cobra.Command {
 	}
 
 	cmd.AddCommand(version.NewCmdVersion())
+	cmd.AddCommand(block.NewCmdBlock())
 	cmd.AddCommand(alias.NewCmdAlias())
 	return cmd
 }

@@ -28,7 +28,7 @@ const (
 	GrpGroup   IPGrouping = iota
 )
 
-func NewHostModels(doc *dom.Document, grouping IPGrouping) []*AliasModel {
+func NewAliasesModels(doc *dom.Document, grouping IPGrouping) []*AliasModel {
 	var result []*AliasModel = make([]*AliasModel, 0)
 
 	for _, block := range doc.Blocks() {
