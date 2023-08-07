@@ -5,17 +5,18 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
-	"github.com/0xcfff/hostsctl/testtools"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
 
+// Command integration test arguments and expected outcomes
 type ITArgs struct {
 	Args       []string
 	Stdin      string
@@ -25,12 +26,15 @@ type ITArgs struct {
 	StdoutFile string
 	ErrorText  string
 }
+
+// Command test case
 type ITTest struct {
 	Name string
 	Args ITArgs
 	Want bool
 }
 
+// Runs set of tests against command returned by the command factory function cf.
 func RunIntergationTests(t *testing.T, tcs []ITTest, tn string, cf func() *cobra.Command) {
 	for _, tt := range tcs {
 		inHelperProcess := os.Getenv("GO_TEST_HELPER_PROCESS") == "1"
@@ -42,7 +46,7 @@ func RunIntergationTests(t *testing.T, tcs []ITTest, tn string, cf func() *cobra
 		}
 		t.Run(tt.Name, func(t *testing.T) {
 			if !tt.Want && !inHelperProcess {
-				tstp := testtools.RunHelperProcess(tn, tt.Name)
+				tstp := runHelperProcess(tn, tt.Name)
 				out, _ := tstp.CombinedOutput()
 				fmt.Println(string(out))
 				assert.NotEqual(t, 0, tstp.ProcessState.ExitCode())
@@ -120,4 +124,21 @@ func RunIntergationTests(t *testing.T, tcs []ITTest, tn string, cf func() *cobra
 			}
 		})
 	}
+}
+
+// Runs binaries of the current process as sub-prpocess passing extra parameters
+// indicating that it is the sub process.
+// This functionality is necessary for being able to test functions
+// which call exit() internally
+func runHelperProcess(suite string, test string, s ...string) *exec.Cmd {
+	cs := []string{fmt.Sprintf("-test.run=%s", suite), "--"}
+	cs = append(cs, s...)
+	env := []string{
+		"GO_TEST_HELPER_PROCESS=1",
+		fmt.Sprintf("GO_TEST_SUITE_NAME=%s", suite),
+		fmt.Sprintf("GO_TEST_TEST_NAME=%s", test),
+	}
+	cmd := exec.Command(os.Args[0], cs...)
+	cmd.Env = append(env, os.Environ()...)
+	return cmd
 }
