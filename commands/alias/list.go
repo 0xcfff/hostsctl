@@ -137,8 +137,8 @@ func writeDataAsText(opt *AliasListOptions, data *dom.Document) error {
 
 		for _, ip := range m {
 			grp := ""
-			if prev == nil || prev.Group.Id != ip.Group.Id {
-				grpId = ip.Group.Id
+			if prev == nil || prev.Block.Id != ip.Block.Id {
+				grpId = ip.Block.Id
 				grp = fmt.Sprintf("[%v]", grpId)
 			}
 
@@ -156,12 +156,12 @@ func writeDataAsText(opt *AliasListOptions, data *dom.Document) error {
 				sys = "*"
 			}
 
-			gn := ip.Group.Name
+			gn := ip.Block.Name
 			if gn == "" {
-				gn = fmt.Sprint(ip.Group.Id)
+				gn = fmt.Sprint(ip.Block.Id)
 			}
 
-			values := []string{grp, sys, ip.IP, strings.Join(ip.Aliases, ", "), ip.Comment, gn, ip.Group.Comment}
+			values := []string{grp, sys, ip.IP, strings.Join(ip.Aliases, ", "), ip.Comment, gn, ip.Block.Comment}
 
 			visible := getVisibleValues(opt, values)
 			fmt.Fprint(w, strings.Join(visible, "\t"))

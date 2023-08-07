@@ -11,10 +11,10 @@ type AliasModel struct {
 	IP      string          `json:"ip"                yaml:"ip"`
 	Aliases []string        `json:"aliases"           yaml:"aliases"`
 	Comment string          `json:"comment,omitempty" yaml:"comment,omitempty"`
-	Group   AliasGroupModel `json:"group,omitempty"   yaml:"group,omitempty"`
+	Block   AliasBlockModel `json:"block,omitempty"   yaml:"block,omitempty"`
 }
 
-type AliasGroupModel struct {
+type AliasBlockModel struct {
 	Id      int    `json:"id"             yaml:"id"`
 	Name    string `json:"name,omitempty" yaml:"name,omitempty"`
 	Comment string `json:"-"              yaml:"-"`
@@ -56,7 +56,7 @@ func convertIPs(ips *dom.IPAliasesBlock, grouping IPGrouping) []*AliasModel {
 func ungroupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
 	result := make([]*AliasModel, 0)
 
-	group := AliasGroupModel{
+	group := AliasBlockModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
 		Comment: ips.Note(),
@@ -68,7 +68,7 @@ func ungroupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
 				IP:      r.IP(),
 				Aliases: []string{al},
 				Comment: r.Note(),
-				Group:   group,
+				Block:   group,
 			}
 			result = append(result, ip)
 		}
@@ -81,7 +81,7 @@ func groupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
 	ipsMap := make(map[string]*AliasModel)
 	ipsComments := make(map[string][]string)
 
-	group := AliasGroupModel{
+	group := AliasBlockModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
 		Comment: ips.Note(),
@@ -92,7 +92,7 @@ func groupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
 		if !ok {
 			ip = &AliasModel{
 				IP:      r.IP(),
-				Group:   group,
+				Block:   group,
 				Comment: r.Note(),
 			}
 			result = append(result, ip)
@@ -119,7 +119,7 @@ func groupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
 func convertOnly(ips *dom.IPAliasesBlock) []*AliasModel {
 	result := make([]*AliasModel, 0)
 
-	group := AliasGroupModel{
+	group := AliasBlockModel{
 		Id:      ips.Id(),
 		Name:    ips.Name(),
 		Comment: ips.Note(),
@@ -130,7 +130,7 @@ func convertOnly(ips *dom.IPAliasesBlock) []*AliasModel {
 			IP:      r.IP(),
 			Comment: r.Note(),
 			Aliases: r.Aliases(),
-			Group:   group,
+			Block:   group,
 		}
 		result = append(result, ip)
 	}
