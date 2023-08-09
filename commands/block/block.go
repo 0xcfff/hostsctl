@@ -11,7 +11,7 @@ func NewCmdBlock() *cobra.Command {
 		},
 	}
 	cmd.AddCommand(NewCmdBlockList())
-	// cmd.AddCommand(NewCmdBlockAdd())
+	cmd.AddCommand(NewCmdBlockAdd())
 	// cmd.AddCommand(NewCmdBlockDelete())
 
 	return cmd
