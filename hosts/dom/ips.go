@@ -47,7 +47,7 @@ func (blk *IPAliasesBlock) SetId(id int) {
 // Returns true if real ID value is set,
 // otherwise if ID is auto generated, then returns false
 func (blk *IPAliasesBlock) IdSet() bool {
-	return blk.id <= idNotSet
+	return blk.id >= idNotSet
 }
 
 func (blk *IPAliasesBlock) Name() string {

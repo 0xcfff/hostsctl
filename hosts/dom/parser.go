@@ -14,10 +14,12 @@ const (
 	whitespaces
 	comments
 	ips
+	planceholderText = "<<placeholder>>"
 )
 
 var (
-	rxBlockId = regexp.MustCompile(`^\s*\[\s*(\d+|\*)\s*\]`)
+	rxBlockId     = regexp.MustCompile(`^\s*\[\s*(\d+|\*)\s*\]`)
+	rxPlaceholder = regexp.MustCompile(`<<\s*placeholder\s*>>`)
 )
 
 type parserContext struct {
@@ -87,14 +89,14 @@ func (ctx *parserContext) tryContinueBlock(el syntax.Element) bool {
 		}
 		return false
 	case comments:
-		if el.Type() == syntax.Comment {
-			ctx.commentsList = append(ctx.commentsList, el.(*syntax.CommentLine))
-			return true
-		}
-		if el.Type() == syntax.IPMapping {
+		if el.Type() == syntax.IPMapping || el.Type() == syntax.Comment && isAliasesPlaceholder(el.(*syntax.CommentLine)) {
 			ctx.ipsList = make([]syntax.Element, 0)
 			ctx.ipsList = append(ctx.ipsList, el)
 			ctx.state = ips
+			return true
+		}
+		if el.Type() == syntax.Comment {
+			ctx.commentsList = append(ctx.commentsList, el.(*syntax.CommentLine))
 			return true
 		}
 		return false
@@ -105,7 +107,7 @@ func (ctx *parserContext) tryContinueBlock(el syntax.Element) bool {
 		}
 		if el.Type() == syntax.Comment {
 			c := el.(*syntax.CommentLine)
-			if isCommentedIPMapping(c) {
+			if isCommentedIPMapping(c) || isAliasesPlaceholder(c) {
 				ctx.ipsList = append(ctx.ipsList, el)
 				return true
 			}

@@ -41,7 +41,7 @@ func NewCmdBlockAdd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opt.blockName, "name", "h", opt.blockName, "Block name")
+	cmd.Flags().StringVarP(&opt.blockName, "name", "t", opt.blockName, "Block name")
 	cmd.Flags().IntVarP(&opt.blockId, "id", "n", opt.blockId, "Block id")
 	cmd.Flags().StringVarP(&opt.comment, "comment", "c", opt.comment, "Block comment")
 	cmd.Flags().BoolVarP(&opt.force, "force", "f", opt.force, "Do not fail if the block already exists, just update it with provided data")
@@ -95,20 +95,35 @@ func (opt *BlockAddOptions) Execute() error {
 		err = updateBlock(block, opt)
 		cobra.CheckErr(err)
 	} else {
-		block = createBlock(opt)
+		block, err = createBlock(opt)
+		cobra.CheckErr(err)
+
 		doc.AddBlock(block)
-		src.Save(doc, dom.FmtKeep)
 	}
+
+	err = src.Save(doc, dom.FmtKeep)
+	cobra.CheckErr(err)
 
 	return nil
 }
 
 func updateBlock(block *dom.IPAliasesBlock, opts *BlockAddOptions) error {
+	if opts.blockId != emptyId {
+		block.SetId(opts.blockId)
+	}
+	if opts.blockName != "" {
+		block.SetName(opts.blockName)
+	}
+	if opts.comment != "" {
+		block.SetNote(opts.comment)
+	}
 	return nil
 }
 
-func createBlock(opts *BlockAddOptions) *dom.IPAliasesBlock {
-	return nil
+func createBlock(opts *BlockAddOptions) (*dom.IPAliasesBlock, error) {
+	block := dom.NewIPAliasesBlock()
+	err := updateBlock(block, opts)
+	return block, err
 }
 
 func findTargetBlock(doc *dom.Document, opt *BlockAddOptions) (*dom.IPAliasesBlock, error) {
@@ -128,7 +143,7 @@ func findTargetBlock(doc *dom.Document, opt *BlockAddOptions) (*dom.IPAliasesBlo
 
 	blocksFound := len(selectedBlocks)
 	if blocksFound > 1 {
-		return nil, fmt.Errorf("multiple blocks found matching criteria %w", common.ErrTooManyEntries)
+		return nil, fmt.Errorf("multiple blocks found matching criteria: %w", common.ErrTooManyEntries)
 	} else if blocksFound == 1 {
 		return selectedBlocks[0], nil
 	}

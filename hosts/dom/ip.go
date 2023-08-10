@@ -159,6 +159,10 @@ func isCommentedIPMapping(comment *syntax.CommentLine) bool {
 	return len(parts) >= 2 && iptools.IsIP(parts[0])
 }
 
+func isAliasesPlaceholder(comment *syntax.CommentLine) bool {
+	return rxPlaceholder.MatchString(comment.CommentText())
+}
+
 func NewIPAliasesEntry(ip string) *IPAliasesEntry {
 	if !iptools.IsIP(ip) {
 		panic("Specified value is not a valid IP")

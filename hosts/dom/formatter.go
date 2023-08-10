@@ -16,11 +16,15 @@ func constructSyntax(doc *Document) *syntax.Document {
 	for _, block := range doc.blocks {
 		switch block.Type() {
 		case IPList:
-			bels := constructAliases(block.(*IPAliasesBlock))
+			b := block.(*IPAliasesBlock)
+			bels := constructAliases(b)
 			if len(elements) > 0 && elements[len(elements)-1].Type() != syntax.Empty {
 				elements = append(elements, syntax.NewEmptyLine())
 			}
 			elements = append(elements, bels...)
+			if len(b.Entries()) == 0 {
+				elements = append(elements, syntax.NewCommentsLine(planceholderText))
+			}
 		case Comments:
 			bels := constructComments(block.(*CommentsBlock))
 			elements = append(elements, bels...)
