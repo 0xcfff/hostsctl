@@ -60,4 +60,20 @@ func Test_parse(t *testing.T) {
 		assert.Equal(t, "proj-01", b0.Name())
 		assert.Equal(t, "system ips", b0.Note())
 	})
+	t.Run("empty ip block", func(t *testing.T) {
+		content := `# custom ips
+# <<placeholder>>`
+		syndoc, _ := syntax.Read(strings.NewReader(content))
+		doc := parse(syndoc)
+
+		assert.Equal(t, syndoc, doc.originalDocument)
+		assert.Equal(t, 1, doc.BlocksCount())
+		assert.Equal(t, IPList, doc.Blocks()[0].Type())
+		b0 := doc.Blocks()[0].(*IPAliasesBlock)
+		assert.Equal(t, 1, len(b0.origHeader))
+		assert.Equal(t, 1, b0.Id())
+		assert.Equal(t, "", b0.Name())
+		assert.Equal(t, "custom ips", b0.Note())
+		assert.Equal(t, 0, len(b0.Entries()))
+	})
 }
