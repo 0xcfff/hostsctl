@@ -17,6 +17,10 @@ type IPAliasesEntry struct {
 	changed     bool
 }
 
+func (blk *IPAliasesEntry) Type() IPAliasesBlockElementType {
+	return Alias
+}
+
 func (blk *IPAliasesEntry) IP() string {
 	return blk.ip
 }
@@ -99,17 +103,20 @@ func removeElements[T any](l []T, remove func(T) bool) ([]T, bool) {
 	return out, changed
 }
 
-func newIPAliasesEntryFromElement(element syntax.Element) *IPAliasesEntry {
+func newIPAliasesEntryFromElement(element syntax.Element) IPAliasesBlockElement {
 	switch element.Type() {
 	case syntax.IPMapping:
 		ip := element.(*syntax.IPMappingLine)
 		return newIPAliasesEntryFromIPElement(ip)
 	case syntax.Comment:
 		comment := element.(*syntax.CommentLine)
-		if !isCommentedIPMapping(comment) {
-			panic("Specified comment line is not IP")
+		if isCommentedIPMapping(comment) {
+			return newIPMappingFromCommentElement(comment)
 		}
-		return newIPMappingFromCommentElement(comment)
+		if isAliasesPlaceholder(comment) {
+			return newIPAliasesPlaceholderFromCommentElement(comment)
+		}
+		panic("Specified comment line is not IP")
 	default:
 		panic("Not supported element type")
 	}

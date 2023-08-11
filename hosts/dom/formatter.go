@@ -88,12 +88,24 @@ func constructAliases(block *IPAliasesBlock) []syntax.Element {
 		}
 	}
 	for _, el := range block.entries {
-		ipAlias := el.origElement
-		if ipAlias == nil {
-			ipAlias = syntax.NewIPMappingLine(el.ip, el.aliases, el.note)
-			el.origElement = ipAlias
+		switch el.Type() {
+		case Alias:
+			ael := el.(*IPAliasesEntry)
+			ipAlias := ael.origElement
+			if ipAlias == nil {
+				ipAlias = syntax.NewIPMappingLine(ael.ip, ael.aliases, ael.note)
+				ael.origElement = ipAlias
+			}
+			elements = append(elements, ipAlias)
+		case Placeholder:
+			pel := el.(*IPAliasesPlaceholder)
+			placeholder := pel.origElement
+			if placeholder == nil {
+				placeholder = syntax.NewCommentsLine(planceholderText)
+				pel.origElement = placeholder
+			}
+			elements = append(elements, placeholder)
 		}
-		elements = append(elements, ipAlias)
 	}
 	return elements
 }

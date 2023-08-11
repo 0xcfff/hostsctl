@@ -79,6 +79,21 @@ unrecognized line 2`
 		b2 := doc.Blocks()[2].(*UnrecognizedBlock)
 		assert.Equal(t, 1, len(b2.BodyElements()))
 	})
+	t.Run("named ip block + disabled IP", func(t *testing.T) {
+		// This implementation may change. Currently,
+		// the idea is to consider only actual IP
+		// or special placeholder as IPs block start.
+		// As such, if the only IP in a block is disabled,
+		// a placeholder should be added in front of it.
+		content := `# system ips
+# 127.0.0.1 localhost`
+		syndoc, _ := syntax.Read(strings.NewReader(content))
+		doc := parse(syndoc)
+
+		assert.Equal(t, syndoc, doc.originalDocument)
+		assert.Equal(t, 1, doc.BlocksCount())
+		assert.Equal(t, Comments, doc.Blocks()[0].Type())
+	})
 	t.Run("empty ip block", func(t *testing.T) {
 		content := `# custom ips
 # <<placeholder>>`

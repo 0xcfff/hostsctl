@@ -10,6 +10,17 @@ import (
 )
 
 const idNotSet = -1
+const (
+	Alias IPAliasesBlockElementType = iota
+	Placeholder
+)
+
+type IPAliasesBlockElementType int
+
+type IPAliasesBlockElement interface {
+	Type() IPAliasesBlockElementType
+	ClearFormatting()
+}
 
 // Block of IPs
 type IPAliasesBlock struct {
@@ -18,7 +29,7 @@ type IPAliasesBlock struct {
 	autoId     int
 	name       string
 	note       string
-	entries    []*IPAliasesEntry
+	entries    []IPAliasesBlockElement
 	changed    bool
 }
 
@@ -80,27 +91,17 @@ func (blk *IPAliasesBlock) ClearFormatting() {
 }
 
 func (blk *IPAliasesBlock) Entries() []*IPAliasesEntry {
-	return slices.Clone(blk.entries)
+	aliasEntries := filterSliceByTypeAndPredicate[*IPAliasesEntry](blk.entries, func(ent *IPAliasesEntry) bool { return true })
+	return aliasEntries
 }
 
 func (blk *IPAliasesBlock) EntriesByIP(ip string) []*IPAliasesEntry {
-	found := make([]*IPAliasesEntry, 0)
-	for _, ent := range blk.entries {
-		if ent.ip == ip {
-			found = append(found, ent)
-		}
-	}
+	found := filterSliceByTypeAndPredicate[*IPAliasesEntry](blk.entries, func(ent *IPAliasesEntry) bool { return ent.ip == ip })
 	return found
 }
 
 func (blk *IPAliasesBlock) EntriesByAlias(alias string) []*IPAliasesEntry {
-	found := make([]*IPAliasesEntry, 0)
-	for _, ent := range blk.entries {
-		if slices.Contains(ent.aliases, alias) {
-			found = append(found, ent)
-			break
-		}
-	}
+	found := filterSliceByTypeAndPredicate[*IPAliasesEntry](blk.entries, func(ent *IPAliasesEntry) bool { return slices.Contains(ent.aliases, alias) })
 	return found
 }
 
@@ -117,7 +118,7 @@ func (blk *IPAliasesBlock) AddEntry(entry *IPAliasesEntry) {
 }
 
 func (blk *IPAliasesBlock) RemoveEntry(entry *IPAliasesEntry) bool {
-	condition := func(it *IPAliasesEntry) bool { return it == entry }
+	condition := func(it IPAliasesBlockElement) bool { return it == entry }
 	newEntries, changed := removeElements(blk.entries, condition)
 	if changed {
 		blk.entries = newEntries
@@ -219,7 +220,7 @@ func parseNFillIPsBlockHeader(block *IPAliasesBlock, autoId int) {
 }
 
 func fillIPsBlockBody(block *IPAliasesBlock, bodyElements []syntax.Element) {
-	entries := make([]*IPAliasesEntry, 0)
+	entries := make([]IPAliasesBlockElement, 0)
 	if len(bodyElements) > 0 {
 		for _, el := range bodyElements {
 			item := newIPAliasesEntryFromElement(el)
@@ -227,4 +228,16 @@ func fillIPsBlockBody(block *IPAliasesBlock, bodyElements []syntax.Element) {
 		}
 	}
 	block.entries = entries
+}
+
+func filterSliceByTypeAndPredicate[B any, S any](items []S, match func(block B) bool) []B {
+	result := make([]B, 0)
+	for _, blk := range items {
+		if tblk, ok := any(blk).(B); ok {
+			if match(tblk) {
+				result = append(result, tblk)
+			}
+		}
+	}
+	return result
 }
