@@ -62,7 +62,7 @@ func ungroupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
 		Comment: ips.Note(),
 	}
 
-	for _, r := range ips.Entries() {
+	for _, r := range ips.AliasEntries() {
 		for _, al := range r.Aliases() {
 			ip := &AliasModel{
 				IP:      r.IP(),
@@ -87,7 +87,7 @@ func groupAndConvert(ips *dom.IPAliasesBlock) []*AliasModel {
 		Comment: ips.Note(),
 	}
 
-	for _, r := range ips.Entries() {
+	for _, r := range ips.AliasEntries() {
 		ip, ok := ipsMap[r.IP()]
 		if !ok {
 			ip = &AliasModel{
@@ -125,7 +125,7 @@ func convertOnly(ips *dom.IPAliasesBlock) []*AliasModel {
 		Comment: ips.Note(),
 	}
 
-	for _, r := range ips.Entries() {
+	for _, r := range ips.AliasEntries() {
 		ip := &AliasModel{
 			IP:      r.IP(),
 			Comment: r.Note(),

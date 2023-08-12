@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
+	"golang.org/x/exp/slices"
 )
 
 // Container object for dom blocks found during parsing of the original document
@@ -50,6 +51,24 @@ func (doc *Document) IPsBlockByIdOrName(idOrName string) *IPAliasesBlock {
 	return ipsBlock
 }
 
+func (doc *Document) IPBlocksByIdentifiers(id int, name string) []*IPAliasesBlock {
+	selectedBlocks := make([]*IPAliasesBlock, 0)
+	allBlocks := doc.IPBlocks()
+	for _, b := range allBlocks {
+		added := false
+		if id != idNotSet && b.IdSet() && b.Id() == id {
+			selectedBlocks = append(selectedBlocks, b)
+			added = true
+		}
+		if !added && name != "" && strings.EqualFold(name, b.Name()) {
+			selectedBlocks = append(selectedBlocks, b)
+			added = true
+		}
+	}
+
+	return selectedBlocks
+}
+
 func (doc *Document) IPBlocks() []*IPAliasesBlock {
 	blocks := make([]*IPAliasesBlock, 0)
 	for _, blk := range doc.blocks {
@@ -62,6 +81,13 @@ func (doc *Document) IPBlocks() []*IPAliasesBlock {
 
 func (doc *Document) AddBlock(block Block) {
 	doc.blocks = append(doc.blocks, block)
+}
+
+func (doc *Document) DeleteBlock(block Block) {
+	idx := slices.Index(doc.blocks, block)
+	if idx != -1 {
+		doc.blocks = slices.Delete(doc.blocks, idx, idx+1)
+	}
 }
 
 func findBlockByPredicate[B any](blocks []Block, match func(block B) bool) B {

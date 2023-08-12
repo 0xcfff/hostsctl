@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
@@ -26,9 +25,8 @@ type BlockAddOptions struct {
 
 func NewCmdBlockAdd() *cobra.Command {
 
-	opt := &BlockAddOptions{
-		blockId: emptyId,
-	}
+	opt := &BlockAddOptions{}
+	opt.blockId = emptyId
 
 	cmd := &cobra.Command{
 		Use:   "add [id or name]",
@@ -85,7 +83,7 @@ func (opt *BlockAddOptions) Execute() error {
 	doc, err := src.Load()
 	cobra.CheckErr(err)
 
-	block, err := findTargetBlock(doc, opt)
+	block, err := findTargetBlockForAdd(doc, opt)
 	cobra.CheckErr(err)
 
 	if block != nil {
@@ -126,20 +124,8 @@ func createBlock(opts *BlockAddOptions) (*dom.IPAliasesBlock, error) {
 	return block, err
 }
 
-func findTargetBlock(doc *dom.Document, opt *BlockAddOptions) (*dom.IPAliasesBlock, error) {
-	selectedBlocks := make([]*dom.IPAliasesBlock, 0)
-	allBlocks := doc.IPBlocks()
-	for _, b := range allBlocks {
-		added := false
-		if opt.blockId != emptyId && b.IdSet() && b.Id() == opt.blockId {
-			selectedBlocks = append(selectedBlocks, b)
-			added = true
-		}
-		if !added && opt.blockName != "" && strings.EqualFold(opt.blockName, b.Name()) {
-			selectedBlocks = append(selectedBlocks, b)
-			added = true
-		}
-	}
+func findTargetBlockForAdd(doc *dom.Document, opt *BlockAddOptions) (*dom.IPAliasesBlock, error) {
+	selectedBlocks := doc.IPBlocksByIdentifiers(opt.blockId, opt.blockName)
 
 	blocksFound := len(selectedBlocks)
 	if blocksFound > 1 {

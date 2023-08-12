@@ -90,34 +90,38 @@ func (blk *IPAliasesBlock) ClearFormatting() {
 	}
 }
 
-func (blk *IPAliasesBlock) Entries() []*IPAliasesEntry {
-	aliasEntries := filterSliceByTypeAndPredicate[*IPAliasesEntry](blk.entries, func(ent *IPAliasesEntry) bool { return true })
+func (blk *IPAliasesBlock) Entries() []IPAliasesBlockElement {
+	return slices.Clone(blk.entries)
+}
+
+func (blk *IPAliasesBlock) AliasEntries() []*IPAliasesEntry {
+	aliasEntries := filterSliceByTypeAndPredicate(blk.entries, func(ent *IPAliasesEntry) bool { return true })
 	return aliasEntries
 }
 
-func (blk *IPAliasesBlock) EntriesByIP(ip string) []*IPAliasesEntry {
-	found := filterSliceByTypeAndPredicate[*IPAliasesEntry](blk.entries, func(ent *IPAliasesEntry) bool { return ent.ip == ip })
+func (blk *IPAliasesBlock) AliasEntriesByIP(ip string) []*IPAliasesEntry {
+	found := filterSliceByTypeAndPredicate(blk.entries, func(ent *IPAliasesEntry) bool { return ent.ip == ip })
 	return found
 }
 
-func (blk *IPAliasesBlock) EntriesByAlias(alias string) []*IPAliasesEntry {
-	found := filterSliceByTypeAndPredicate[*IPAliasesEntry](blk.entries, func(ent *IPAliasesEntry) bool { return slices.Contains(ent.aliases, alias) })
+func (blk *IPAliasesBlock) AliasEntriesByAlias(alias string) []*IPAliasesEntry {
+	found := filterSliceByTypeAndPredicate(blk.entries, func(ent *IPAliasesEntry) bool { return slices.Contains(ent.aliases, alias) })
 	return found
 }
 
-func (blk *IPAliasesBlock) EntriesByIPOrAlias(ipOrAlias string) []*IPAliasesEntry {
-	entries := blk.EntriesByIP(ipOrAlias)
+func (blk *IPAliasesBlock) AliasEntriesByIPOrAlias(ipOrAlias string) []*IPAliasesEntry {
+	entries := blk.AliasEntriesByIP(ipOrAlias)
 	if len(entries) == 0 {
-		entries = blk.EntriesByAlias(ipOrAlias)
+		entries = blk.AliasEntriesByAlias(ipOrAlias)
 	}
 	return entries
 }
 
-func (blk *IPAliasesBlock) AddEntry(entry *IPAliasesEntry) {
+func (blk *IPAliasesBlock) AddEntry(entry IPAliasesBlockElement) {
 	blk.entries = append(blk.entries, entry)
 }
 
-func (blk *IPAliasesBlock) RemoveEntry(entry *IPAliasesEntry) bool {
+func (blk *IPAliasesBlock) RemoveEntry(entry IPAliasesBlockElement) bool {
 	condition := func(it IPAliasesBlockElement) bool { return it == entry }
 	newEntries, changed := removeElements(blk.entries, condition)
 	if changed {

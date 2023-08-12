@@ -100,7 +100,7 @@ func findEntriesToDelete(doc *dom.Document, opt *AliasDeleteOptions) (map[*dom.I
 				return nil, fmt.Errorf("blockId: %s; %w", opt.blockIdOrName, common.ErrBlockNotFound)
 			}
 		} else {
-			entries := block.EntriesByIPOrAlias(opt.ipOrAlias)
+			entries := block.AliasEntriesByIPOrAlias(opt.ipOrAlias)
 			if len(entries) == 0 && !opt.force {
 				return nil, common.ErrAliasNotFound
 			}
@@ -108,7 +108,7 @@ func findEntriesToDelete(doc *dom.Document, opt *AliasDeleteOptions) (map[*dom.I
 		}
 	} else {
 		for _, block := range doc.IPBlocks() {
-			var ipsEntries []*dom.IPAliasesEntry = block.EntriesByIPOrAlias(opt.ipOrAlias)
+			var ipsEntries []*dom.IPAliasesEntry = block.AliasEntriesByIPOrAlias(opt.ipOrAlias)
 			if len(ipsEntries) > 0 {
 				entriesMap[block] = ipsEntries
 			}

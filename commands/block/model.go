@@ -35,7 +35,7 @@ func convertIPs(ips *dom.IPAliasesBlock) *BlockModel {
 	cntAll := 0
 	cntSys := 0
 
-	for _, ip := range ips.Entries() {
+	for _, ip := range ips.AliasEntries() {
 		for _, a := range ip.Aliases() {
 			cntAll += 1
 			if iptools.IsSystemAlias(ip.IP(), a) {

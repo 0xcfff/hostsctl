@@ -120,7 +120,7 @@ func readIpAliasesFromPassedInput(opt *AliasAddOptions) ([]*dom.IPAliasesEntry, 
 		switch b.Type() {
 		case dom.IPList:
 			ips := b.(*dom.IPAliasesBlock)
-			entries := ips.Entries()
+			entries := ips.AliasEntries()
 			for _, a := range entries {
 				a.ClearFormatting()
 			}
