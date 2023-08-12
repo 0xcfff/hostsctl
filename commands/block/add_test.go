@@ -10,7 +10,7 @@ import (
 func TestBlockAddCommand(t *testing.T) {
 	tests := []cmdtest.ITTest{
 		{
-			Name: "empty - by name",
+			Name: "add empty - by name",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"mk8s-local"},
 				Stdin:      "",
@@ -22,7 +22,7 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: true,
 		},
 		{
-			Name: "empty - by id",
+			Name: "add empty - by id",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"15"},
 				Stdin:      "",
@@ -34,7 +34,7 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: true,
 		},
 		{
-			Name: "empty - full data",
+			Name: "add empty - full data",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-n", "15", "-t", "mk8s-local", "-c", "Local Microk8s cluster for a pet project"},
 				Stdin:      "",
@@ -48,7 +48,7 @@ func TestBlockAddCommand(t *testing.T) {
 
 		// Force flag
 		{
-			Name: "force - force update by id",
+			Name: "add force - force update by id",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-n", "15", "-t", "pet-prj100", "-c", "Renewed project", "--force"},
 				Stdin:      "",
@@ -60,7 +60,7 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: true,
 		},
 		{
-			Name: "force - force update by name",
+			Name: "add force - force update by name",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-n", "150", "-t", "pet-prj1", "-c", "Renewed project", "--force"},
 				Stdin:      "",
@@ -74,7 +74,7 @@ func TestBlockAddCommand(t *testing.T) {
 
 		// Error cases
 		{
-			Name: "error - already exists by id",
+			Name: "add error - already exists by id",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-n", "15"},
 				Stdin:      "",
@@ -86,7 +86,7 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: false,
 		},
 		{
-			Name: "error - already exists by name",
+			Name: "add error - already exists by name",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-t", "pet-prj2"},
 				Stdin:      "",
@@ -98,7 +98,7 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: false,
 		},
 		{
-			Name: "error - too many blocks",
+			Name: "add error - too many blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-n", "15", "-t", "pet-prj2"},
 				Stdin:      "",
