@@ -46,6 +46,32 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: true,
 		},
 
+		// Force flag
+		{
+			Name: "force - force update by id",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-n", "15", "-t", "pet-prj100", "-c", "Renewed project", "--force"},
+				Stdin:      "",
+				InputFile:  "testdata/four-blocks.txt",
+				OutputFile: "testdata/add/four-blocks_update-block-by-id_result.txt",
+				Stdout:     "",
+				ErrorText:  "",
+			},
+			Want: true,
+		},
+		{
+			Name: "force - force update by name",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"-n", "150", "-t", "pet-prj1", "-c", "Renewed project", "--force"},
+				Stdin:      "",
+				InputFile:  "testdata/four-blocks.txt",
+				OutputFile: "testdata/add/four-blocks_update-block-by-name_result.txt",
+				Stdout:     "",
+				ErrorText:  "",
+			},
+			Want: true,
+		},
+
 		// Error cases
 		{
 			Name: "error - already exists by id",
