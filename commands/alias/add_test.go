@@ -10,60 +10,60 @@ import (
 func TestAliasAddCommand(t *testing.T) {
 	tests := []cmdtest.ITTest{
 		{
-			Name: "empty - args",
+			Name: "add args - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test"},
 				Stdin:      "",
 				InputFile:  "testdata/empty.txt",
-				OutputFile: "testdata/add/empty_one-alias_result.txt",
+				OutputFile: "testdata/add/add_args__empty__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "one line - args",
+			Name: "add args - one line",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				OutputFile: "testdata/add/one-ip_one-alias_result.txt",
+				OutputFile: "testdata/add/add_args__one_ip__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "one line - stdin",
-			Args: cmdtest.ITArgs{
-				Args:       []string{},
-				Stdin:      "127.0.0.1 my.domain.test",
-				InputFile:  "testdata/one-ip.txt",
-				OutputFile: "testdata/add/one-ip_one-alias_result.txt",
-				Stdout:     "",
-				ErrorText:  "",
-			},
-			Want: true,
-		},
-		{
-			Name: "one line - args + comment",
+			Name: "add args - one line + comment",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test", "-c", "My custom service domain"},
 				Stdin:      "127.0.0.1 my.domain.test",
 				InputFile:  "testdata/one-ip.txt",
-				OutputFile: "testdata/add/one-ip_one-alias-and-comment_result.txt",
+				OutputFile: "testdata/add/add_args__one_ip_and_comment__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "one line - stdin + comment",
+			Name: "add stdin - one line",
+			Args: cmdtest.ITArgs{
+				Args:       []string{},
+				Stdin:      "127.0.0.1 my.domain.test",
+				InputFile:  "testdata/one-ip.txt",
+				OutputFile: "testdata/add/add_stdin__one_ip__result.txt",
+				Stdout:     "",
+				ErrorText:  "",
+			},
+			Want: true,
+		},
+		{
+			Name: "add stdin - one line + comment",
 			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				Stdin:      "127.0.0.1 my.domain.test # My custom service domain",
 				InputFile:  "testdata/one-ip.txt",
-				OutputFile: "testdata/add/one-ip_one-alias-and-comment_result.txt",
+				OutputFile: "testdata/add/add_stdin__one_ip_and_comment__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
@@ -71,60 +71,60 @@ func TestAliasAddCommand(t *testing.T) {
 		},
 		// add to specific block
 		{
-			Name: "add - 3rd block + no block specified",
+			Name: "add to block - no block specified",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
-				OutputFile: "testdata/add/four-blocks_one-alias_no-block_result.txt",
+				OutputFile: "testdata/add/add_to_block__no_block_specified__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "add - 3rd block + by id",
+			Name: "add to block - #3 by id",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "3"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
-				OutputFile: "testdata/add/four-blocks_one-alias_3rd-block_result.txt",
+				OutputFile: "testdata/add/add_to_block__nr3_by_id__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "add - 3rd block + by name",
+			Name: "add to block - #3 by name",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "pet-prj1"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
-				OutputFile: "testdata/add/four-blocks_one-alias_3rd-block_result.txt",
+				OutputFile: "testdata/add/add_to_block__nr3_by_name__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "add - 5th block + by id",
+			Name: "add to block - #5 by id",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "5", "--force"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
-				OutputFile: "testdata/add/four-blocks_one-alias-by-id_5th-block_result.txt",
+				OutputFile: "testdata/add/add_to_block__nr5_by_id__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "add - 5th block + by name",
+			Name: "add to block - #5 by name",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "prj-pet009", "--force"},
 				Stdin:      "",
 				InputFile:  "testdata/four-blocks.txt",
-				OutputFile: "testdata/add/four-blocks_one-alias-by-name_5th-block_result.txt",
+				OutputFile: "testdata/add/add_to_block__nr5_by_name__result.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
@@ -133,7 +133,7 @@ func TestAliasAddCommand(t *testing.T) {
 
 		// errors cases
 		{
-			Name: "one line - args + missing block",
+			Name: "error - missing block",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"127.0.0.1", "my.domain.test", "-b", "local-k8s"},
 				Stdin:      "",

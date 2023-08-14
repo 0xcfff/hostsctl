@@ -74,7 +74,7 @@ func TestBlockAddCommand(t *testing.T) {
 
 		// Error cases
 		{
-			Name: "add error - already exists by id",
+			Name: "error - already exists by id",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-n", "15"},
 				Stdin:      "",
@@ -86,7 +86,7 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: false,
 		},
 		{
-			Name: "add error - already exists by name",
+			Name: "error - already exists by name",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-t", "pet-prj2"},
 				Stdin:      "",
@@ -98,7 +98,7 @@ func TestBlockAddCommand(t *testing.T) {
 			Want: false,
 		},
 		{
-			Name: "add error - too many blocks",
+			Name: "error - too many blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-n", "15", "-t", "pet-prj2"},
 				Stdin:      "",
