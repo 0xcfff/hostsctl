@@ -82,36 +82,36 @@ func TestAliasListCommand(t *testing.T) {
 		},
 		// wide
 		{
-			Name: "wide empty",
+			Name: "list wide - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "wide"},
 				Stdin:      "",
 				InputFile:  "testdata/empty.txt",
-				StdoutFile: "testdata/list/wide_empty.txt",
+				StdoutFile: "testdata/list/list_wide__empty__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "wide one line",
+			Name: "list wide - one line",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "wide"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				StdoutFile: "testdata/list/wide_one-ip.txt",
+				StdoutFile: "testdata/list/list_wide__one_ip__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "wide two blocks",
+			Name: "list wide - two blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "wide"},
 				Stdin:      "",
 				InputFile:  "testdata/two-sys-blocks.txt",
-				StdoutFile: "testdata/list/wide_two-sys-blocks.txt",
+				StdoutFile: "testdata/list/list_wide__two_sys_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
@@ -156,24 +156,24 @@ func TestAliasListCommand(t *testing.T) {
 		},
 		// json set of tests
 		{
-			Name: "json empty",
+			Name: "list json - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "json"},
 				Stdin:      "",
 				InputFile:  "testdata/empty.txt",
-				StdoutFile: "testdata/list/json_empty.txt",
+				StdoutFile: "testdata/list/list_json__empty__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "json one line",
+			Name: "list json - one line",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "json"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				StdoutFile: "testdata/list/json_one-ip.txt",
+				StdoutFile: "testdata/list/list_json__one_ip__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
@@ -181,24 +181,24 @@ func TestAliasListCommand(t *testing.T) {
 		},
 		// yaml set of tests
 		{
-			Name: "yaml empty",
+			Name: "list yaml - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "yaml"},
 				Stdin:      "",
 				InputFile:  "testdata/empty.txt",
-				StdoutFile: "testdata/list/yaml_empty.txt",
+				StdoutFile: "testdata/list/list_yaml__empty__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "yaml one line",
+			Name: "list yaml - one line",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "yaml"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				StdoutFile: "testdata/list/yaml_one-ip.txt",
+				StdoutFile: "testdata/list/list_yaml__one_ip__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
@@ -206,36 +206,36 @@ func TestAliasListCommand(t *testing.T) {
 		},
 		// arrangement cases
 		{
-			Name: "arange - two blocks - raw",
+			Name: "arange raw - two blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-a", "raw"},
 				Stdin:      "",
 				InputFile:  "testdata/two-mixed-blocks.txt",
-				StdoutFile: "testdata/list/arange_two-mixed-blocks_raw.txt",
+				StdoutFile: "testdata/list/arange_raw__two_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "arange - two blocks - group",
+			Name: "arange group - two blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-a", "group"},
 				Stdin:      "",
 				InputFile:  "testdata/two-mixed-blocks.txt",
-				StdoutFile: "testdata/list/arange_two-mixed-blocks_group.txt",
+				StdoutFile: "testdata/list/arange_group__two_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "arange - two blocks - ungroup",
+			Name: "arange ungroup - two blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-a", "ungroup"},
 				Stdin:      "",
 				InputFile:  "testdata/two-mixed-blocks.txt",
-				StdoutFile: "testdata/list/arange_two-mixed-blocks_ungroup.txt",
+				StdoutFile: "testdata/list/arange_ungroup__two_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
