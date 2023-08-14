@@ -11,33 +11,33 @@ func TestBlockListCommand(t *testing.T) {
 	tests := []cmdtest.ITTest{
 		// default
 		{
-			Name: "list empty",
+			Name: "list - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				InputFile:  "testdata/empty.txt",
-				StdoutFile: "testdata/list/list_empty__output.txt",
+				StdoutFile: "testdata/list/list__empty__output.txt",
 			},
 			Want: true,
 		},
 		{
-			Name: "list one block",
+			Name: "list - one block",
 			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				StdoutFile: "testdata/list/list_one_ip__output.txt",
+				StdoutFile: "testdata/list/list__one_ip__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "list two sys blocks",
+			Name: "list - two sys blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				Stdin:      "",
 				InputFile:  "testdata/two-sys-blocks.txt",
-				StdoutFile: "testdata/list/list_two_sys_blocks__output.txt",
+				StdoutFile: "testdata/list/list__two_sys_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},

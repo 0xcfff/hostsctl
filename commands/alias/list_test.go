@@ -11,33 +11,33 @@ func TestAliasListCommand(t *testing.T) {
 	tests := []cmdtest.ITTest{
 		// default
 		{
-			Name: "default empty",
+			Name: "list - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				InputFile:  "testdata/empty.txt",
-				StdoutFile: "testdata/list/default_empty.txt",
+				StdoutFile: "testdata/list/list__empty__output.txt",
 			},
 			Want: true,
 		},
 		{
-			Name: "default one line",
+			Name: "list - one line",
 			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				StdoutFile: "testdata/list/default_one-ip.txt",
+				StdoutFile: "testdata/list/list__one_ip__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "default two blocks",
+			Name: "list - two blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{},
 				Stdin:      "",
 				InputFile:  "testdata/two-sys-blocks.txt",
-				StdoutFile: "testdata/list/default_two-sys-blocks.txt",
+				StdoutFile: "testdata/list/list__two_sys_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
@@ -45,36 +45,36 @@ func TestAliasListCommand(t *testing.T) {
 		},
 		// short
 		{
-			Name: "plain empty",
+			Name: "list short - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "short"},
 				Stdin:      "",
 				InputFile:  "testdata/empty.txt",
-				StdoutFile: "testdata/list/short_empty.txt",
+				StdoutFile: "testdata/list/list_short__empty__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "plain one line",
+			Name: "list short - one line",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "short"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				StdoutFile: "testdata/list/short_one-ip.txt",
+				StdoutFile: "testdata/list/list_short__one_ip__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "plain two blocks",
+			Name: "list short - two sys blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "short"},
 				Stdin:      "",
 				InputFile:  "testdata/two-sys-blocks.txt",
-				StdoutFile: "testdata/list/short_two-sys-blocks.txt",
+				StdoutFile: "testdata/list/list_short__two_sys_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
@@ -119,36 +119,36 @@ func TestAliasListCommand(t *testing.T) {
 		},
 		// plain
 		{
-			Name: "plain empty",
+			Name: "list plain - empty",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "plain"},
 				Stdin:      "",
 				InputFile:  "testdata/empty.txt",
-				StdoutFile: "testdata/list/plain_empty.txt",
+				StdoutFile: "testdata/list/list_plain__empty__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "plain one line",
+			Name: "list plain - one line",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "plain"},
 				Stdin:      "",
 				InputFile:  "testdata/one-ip.txt",
-				StdoutFile: "testdata/list/plain_one-ip.txt",
+				StdoutFile: "testdata/list/list_plain__one_ip__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
 			Want: true,
 		},
 		{
-			Name: "plain two blocks",
+			Name: "list plain - two blocks",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"-o", "plain"},
 				Stdin:      "",
 				InputFile:  "testdata/two-sys-blocks.txt",
-				StdoutFile: "testdata/list/plain_two-sys-blocks.txt",
+				StdoutFile: "testdata/list/list_plain__two_sys_blocks__output.txt",
 				Stdout:     "",
 				ErrorText:  "",
 			},
