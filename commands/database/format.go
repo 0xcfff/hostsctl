@@ -1,4 +1,4 @@
-package format
+package database
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ type FormatOptions struct {
 	dryRun  bool
 }
 
-func NewCmdFormatDocument() *cobra.Command {
+func NewCmdDatabaseFormat() *cobra.Command {
 
 	opt := &FormatOptions{}
 

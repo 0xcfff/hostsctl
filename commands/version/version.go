@@ -1,8 +1,8 @@
 package version
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"runtime/debug"
 
 	"github.com/spf13/cobra"
@@ -17,7 +17,7 @@ func NewCmdVersion() *cobra.Command {
 			if ok {
 				fmt.Println(os.Args[0], "Version:", b.Main.Version, "Go Version:", b.GoVersion)
 			} else {
-				cobra.CheckErr(fmt.Errorf("Can't read dnspipe version"))
+				cobra.CheckErr(fmt.Errorf("Can't read hostsctl version"))
 			}
 
 		},

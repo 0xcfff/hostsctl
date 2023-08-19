@@ -1,4 +1,4 @@
-package print
+package database
 
 import (
 	"bufio"
@@ -14,7 +14,7 @@ type PrintOptions struct {
 	command *cobra.Command
 }
 
-func NewCmdPrintDocument() *cobra.Command {
+func NewCmdDatabasePrint() *cobra.Command {
 
 	opt := &PrintOptions{}
 
