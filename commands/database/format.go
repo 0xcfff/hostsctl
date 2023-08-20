@@ -1,8 +1,6 @@
 package database
 
 import (
-	"fmt"
-
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
 	"github.com/0xcfff/hostsctl/hosts/dom"
@@ -20,7 +18,7 @@ func NewCmdDatabaseFormat() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "format [--dry-run] [filter]",
-		Short: fmt.Sprintf("Formats %s", hosts.EtcHosts.Path()),
+		Short: "Formats the database",
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())

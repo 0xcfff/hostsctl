@@ -20,7 +20,7 @@ func NewCmdDatabasePrint() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "print",
-		Short: fmt.Sprintf("Prints contents of %s", hosts.EtcHosts.Path()),
+		Short: "Prints contents of the database",
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())
