@@ -40,6 +40,10 @@ func (opt *FormatOptions) Complete(cmd *cobra.Command, args []string) error {
 }
 
 func (opt *FormatOptions) Validate() error {
+	args := opt.command.Flags().Args()
+	if len(args) > 0 {
+		return common.ErrTooManyArguments
+	}
 	return nil
 }
 

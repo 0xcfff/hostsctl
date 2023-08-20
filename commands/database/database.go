@@ -13,6 +13,7 @@ func NewCmdDatabase() *cobra.Command {
 	}
 	cmd.AddCommand(NewCmdDatabasePrint())
 	cmd.AddCommand(NewCmdDatabaseFormat())
+	cmd.AddCommand(NewCmdDatabaseLocation())
 
 	return cmd
 }

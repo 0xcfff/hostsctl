@@ -38,6 +38,10 @@ func (opt *PrintOptions) Complete(cmd *cobra.Command, args []string) error {
 }
 
 func (opt *PrintOptions) Validate() error {
+	args := opt.command.Flags().Args()
+	if len(args) > 0 {
+		return common.ErrTooManyArguments
+	}
 	return nil
 }
 

@@ -36,6 +36,15 @@ func TestDatabaseFormatCommand(t *testing.T) {
 			},
 			Want: true,
 		},
+		{
+			Name: "format error - too many arguments",
+			Args: cmdtest.ITArgs{
+				Args:      []string{"15"},
+				InputFile: "testdata/six-blocks.txt",
+				ErrorText: "too many arguments",
+			},
+			Want: false,
+		},
 	}
 	cmdtest.RunIntergationTests(t, tests, "TestDatabaseFormatCommand", func() *cobra.Command { return NewCmdDatabaseFormat() })
 }
