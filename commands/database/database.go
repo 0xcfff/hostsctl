@@ -14,6 +14,8 @@ func NewCmdDatabase() *cobra.Command {
 	cmd.AddCommand(NewCmdDatabasePrint())
 	cmd.AddCommand(NewCmdDatabaseFormat())
 	cmd.AddCommand(NewCmdDatabaseLocation())
+	cmd.AddCommand(NewCmdDatabaseBackup())
+	cmd.AddCommand(NewCmdDatabaseRestore())
 
 	return cmd
 }
