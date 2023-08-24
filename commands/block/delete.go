@@ -104,7 +104,7 @@ func findTargetBlockForDelete(doc *dom.Document, opt *BlockDeleteOptions) ([]*do
 	} else {
 		entriesFound := len(selectedBlocks[0].AliasEntries())
 		if entriesFound > 0 && !opt.force {
-			return nil, fmt.Errorf("target block is not empty, %d entry(es) found in the block: %w", blocksFound, common.ErrTooManyEntries)
+			return nil, fmt.Errorf("target block is not empty, %d entry(es) found in the block: %w", entriesFound, common.ErrTooManyEntries)
 		}
 	}
 
