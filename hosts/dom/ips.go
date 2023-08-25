@@ -20,6 +20,7 @@ type IPAliasesBlockElementType int
 type IPAliasesBlockElement interface {
 	Type() IPAliasesBlockElementType
 	ClearFormatting()
+	dirty() bool
 }
 
 // Block of IPs
@@ -38,7 +39,17 @@ func (blk *IPAliasesBlock) Type() BlockType {
 }
 
 func (blk *IPAliasesBlock) dirty() bool {
-	return blk.changed
+	if blk.changed {
+		return true
+	}
+
+	for _, ent := range blk.entries {
+		if ent.dirty() {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (blk *IPAliasesBlock) Id() int {
@@ -129,6 +140,30 @@ func (blk *IPAliasesBlock) RemoveEntry(entry IPAliasesBlockElement) bool {
 		blk.changed = true
 	}
 	return changed
+}
+
+func (blk *IPAliasesBlock) normalize() bool {
+	normalized := false
+	var placeholder IPAliasesBlockElement
+	hasIPs := false
+	for _, ent := range blk.entries {
+		switch ent.Type() {
+		case Placeholder:
+			placeholder = ent
+		case Alias:
+			hasIPs = true
+		default:
+		}
+	}
+	if hasIPs && placeholder != nil {
+		blk.RemoveEntry(placeholder)
+		normalized = true
+	} else if !hasIPs && placeholder == nil {
+		blk.AddEntry(NewIPAliasesPlaceholder())
+		normalized = true
+	}
+
+	return normalized
 }
 
 func NewIPAliasesBlock() *IPAliasesBlock {

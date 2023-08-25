@@ -68,6 +68,8 @@ func (opt *AliasDeleteOptions) Execute() error {
 	err = performDelete(entriesMap, opt.ipOrAlias)
 	cobra.CheckErr(err)
 
+	doc.Normalize()
+
 	err = src.Save(doc, dom.FmtKeep)
 	cobra.CheckErr(err)
 

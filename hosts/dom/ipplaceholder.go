@@ -26,3 +26,10 @@ func newIPAliasesPlaceholderFromCommentElement(el *syntax.CommentLine) *IPAliase
 		changed:     false,
 	}
 }
+
+func NewIPAliasesPlaceholder() *IPAliasesPlaceholder {
+	return &IPAliasesPlaceholder{
+		origElement: nil,
+		changed:     true,
+	}
+}

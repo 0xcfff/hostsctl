@@ -90,6 +90,21 @@ func (doc *Document) DeleteBlock(block Block) {
 	}
 }
 
+func (doc *Document) Normalize() bool {
+	normalized := false
+	for _, blk := range doc.blocks {
+		switch blk.Type() {
+		case IPList:
+			if blk.dirty() {
+				ips := blk.(*IPAliasesBlock)
+				normalized = normalized && ips.normalize()
+			}
+		default:
+		}
+	}
+	return normalized
+}
+
 func findBlockByPredicate[B any](blocks []Block, match func(block B) bool) B {
 	var result B
 	for _, blk := range blocks {

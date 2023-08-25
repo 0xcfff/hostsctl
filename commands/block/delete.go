@@ -83,6 +83,8 @@ func (opt *BlockDeleteOptions) Execute() error {
 	err = deleteBlocks(doc, targerBlocks)
 	cobra.CheckErr(err)
 
+	doc.Normalize()
+
 	err = src.Save(doc, dom.FmtKeep)
 	cobra.CheckErr(err)
 

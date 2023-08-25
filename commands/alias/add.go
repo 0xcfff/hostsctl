@@ -68,6 +68,8 @@ func (opt *AliasAddOptions) Execute() error {
 		ipsBlock.AddEntry(a)
 	}
 
+	doc.Normalize()
+
 	err = src.Save(doc, dom.FmtKeep)
 	cobra.CheckErr(err)
 

@@ -99,6 +99,8 @@ func (opt *BlockAddOptions) Execute() error {
 		doc.AddBlock(block)
 	}
 
+	doc.Normalize()
+
 	err = src.Save(doc, dom.FmtKeep)
 	cobra.CheckErr(err)
 
