@@ -83,6 +83,18 @@ func TestAliasAddCommand(t *testing.T) {
 			Want: true,
 		},
 		{
+			Name: "add to block - empty block with placeholder",
+			Args: cmdtest.ITArgs{
+				Args:       []string{"192.168.100.100", "local-service"},
+				Stdin:      "",
+				InputFile:  "testdata/two-blocks-one-empty.txt",
+				OutputFile: "testdata/add/add_to_block__empty_block_with_placeholder__result.txt",
+				Stdout:     "",
+				ErrorText:  "",
+			},
+			Want: true,
+		},
+		{
 			Name: "add to block - #3 by id",
 			Args: cmdtest.ITArgs{
 				Args:       []string{"192.168.100.100", "local-service", "-b", "3"},

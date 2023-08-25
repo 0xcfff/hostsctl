@@ -97,7 +97,9 @@ func (doc *Document) Normalize() bool {
 		case IPList:
 			if blk.dirty() {
 				ips := blk.(*IPAliasesBlock)
-				normalized = normalized && ips.normalize()
+				if ips.normalize() {
+					normalized = true
+				}
 			}
 		default:
 		}
