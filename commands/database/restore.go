@@ -7,6 +7,7 @@ import (
 
 	"github.com/0xcfff/hostsctl/commands/common"
 	"github.com/0xcfff/hostsctl/hosts"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
@@ -56,31 +57,33 @@ func (opt *RestoreOptions) Execute() error {
 		sourcePath = fmt.Sprintf("%s.bak", targetPath)
 	}
 
-	fs := common.FileSystem(opt.command.Context())
+	src := hosts.NewSource(sourcePath, common.FileSystem(opt.command.Context()))
+	err := src.Apply(func(path string, fs afero.Fs) error {
+		sf, err := fs.Open(path)
+		if err != nil {
+			return err
+		}
+		defer sf.Close()
 
-	sf, err := fs.Open(sourcePath)
-	if err != nil {
-		return err
-	}
-	defer sf.Close()
+		tf, err := fs.OpenFile(targetPath, os.O_CREATE|os.O_RDWR, 0o644)
+		if err != nil {
+			return err
+		}
+		defer tf.Close()
 
-	tf, err := fs.OpenFile(targetPath, os.O_CREATE|os.O_RDWR, 0o644)
-	if err != nil {
-		return err
-	}
-	defer tf.Close()
+		err = tf.Truncate(0)
+		if err != nil {
+			return err
+		}
 
-	err = tf.Truncate(0)
-	if err != nil {
-		return err
-	}
+		_, err = io.Copy(tf, sf)
+		if err != nil {
+			return err
+		}
 
-	cnt, err := io.Copy(tf, sf)
-	if err != nil {
-		return err
-	}
+		return nil
 
-	fmt.Printf("%d bytes copied \n", cnt)
+	})
 
-	return nil
+	return err
 }
