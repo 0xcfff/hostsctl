@@ -160,8 +160,6 @@ func (blk *IPAliasesBlock) normalize() bool {
 		blk.RemoveEntry(placeholder)
 		normalized = true
 	} else if !hasIPs && placeholder == nil {
-		// totalCount := len(blk.entries)
-		// TODO: if no ips and no headers, just remove the entire block
 		blk.AddEntry(NewIPAliasesPlaceholder())
 		normalized = true
 	}
