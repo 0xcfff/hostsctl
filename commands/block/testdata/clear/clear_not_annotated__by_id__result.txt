@@ -1,0 +1,9 @@
+127.0.0.1	localhost my-local
+127.0.1.1	laptop
+
+# [*]
+# <<placeholder>>
+
+192.168.100.51  users.example.com
+192.168.100.52  orders.example.com
+192.168.100.52  transactions.example.com

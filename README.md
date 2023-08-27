@@ -2,8 +2,8 @@
 A small tool to manage local /etc/hosts file and sync DNS records from various sources into it.
 
 # TODO
-* Implement backup/restore for the database
 * Implement clear/clean for a block
+* Implement check on deletion of a system alias
 * Update readme
 * Create CI
 * Publish to marketplaces
