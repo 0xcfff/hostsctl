@@ -13,6 +13,7 @@ func NewCmdBlock() *cobra.Command {
 	cmd.AddCommand(NewCmdBlockList())
 	cmd.AddCommand(NewCmdBlockAdd())
 	cmd.AddCommand(NewCmdBlockDelete())
+	cmd.AddCommand(NewCmdBlockClear())
 
 	return cmd
 }

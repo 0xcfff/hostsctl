@@ -125,6 +125,13 @@ kubectl get nodes -o jsonpath='{range .items[*]}{.status.addresses[?(@.type=="In
 kubectl get nodes -o custom-columns='"IP":.status.addresses[?(@.type=="InternalIP")].address,ALIAS:.status.addresses[?(@.type=="Hostname")].address' --no-headers
 
 
+kubectl get nodes -o custom-columns='"IP":.status.loadBalancer.ingress.[0].ip,ALIAS:.metadata.name' --no-headers
+kubectl get nodes -o jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address} {.status.addresses[?(@.type=="Hostname")].address}{"\n"}'
+
+kubectl get svc -A -o custom-columns='"IP":.status.loadBalancer.ingress[0].ip,ALIAS:.metadata.name' --no-headers
+kubectl get svc -A -o jsonpath='{range .items[?(@.status.loadBalancer.ingress[0].ip)]}{.status.loadBalancer.ingress[0].ip} {.metadata.name}{"\n"}'
+
+
 ######################
 Sample Output
 

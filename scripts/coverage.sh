@@ -1,7 +1,6 @@
 # /bin/bash
 
-ORIG_DIR=$(pwd)
-mkdir -p coverage
-go test ./... -cover -coverpkg=./... -coverprofile=./coverage/prof.out 
-go tool cover -html=./coverage/prof.out -o ./coverage/coverage.html
-firefox ./coverage/coverage.html
+mkdir -p out/coverage
+go test ./... -cover -coverpkg=./... -coverprofile=./out/coverage/prof.out 
+go tool cover -html=./out/coverage/prof.out -o ./out/coverage/coverage.html
+firefox ./out/coverage/coverage.html
