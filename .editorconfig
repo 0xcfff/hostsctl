@@ -1,0 +1,20 @@
+root = true
+
+# All files
+[*]
+#### Core EditorConfig Options ####
+
+indent_style = space
+
+# Indentation and spacing
+indent_size = 4
+tab_width = 4
+
+# Xml files
+[*.xml]
+indent_size = 2
+
+# Yaml files
+[*.yaml]
+indent_size = 2
+
