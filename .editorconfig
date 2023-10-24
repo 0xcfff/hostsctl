@@ -15,6 +15,6 @@ tab_width = 4
 indent_size = 2
 
 # Yaml files
-[*.yaml]
+[*.{yaml,yml}]
 indent_size = 2
 

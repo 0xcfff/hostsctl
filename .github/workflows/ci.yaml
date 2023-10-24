@@ -1,5 +1,4 @@
-
-name: "CI - ${{ github.event.head_commit.message }}"
+name: "CI"
 on:
   push:
     branches:
@@ -12,21 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # step 1: set up go
+      # step 1: Set up go
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v1
         with:
           go-version: ${{ env.GO_VERSION }}
       
-      # step 2: checkout repository code
+      # step 2: Checkout repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # step 3: install dependencies
+      # step 3: Install dependencies
       - name: Install Go dependencies
         run: go get
       
-      # step 4: run test
+      # step 4: Run test
       - name: go test
         run: go test
     
