@@ -13,9 +13,15 @@ jobs:
 
   test:
     name: test
-    runs-on: ubuntu-latest
+    runs-on: "${matrix.os}"
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        shell: bash
+        
     steps:
-
       # step 1: Set up go
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v1
@@ -26,13 +32,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # step 3: Install dependencies
-      - name: Install Go dependencies
-        run: go get
+      # step 3: Create output folder
+      - name: Create output folder
+        run: mkdir -p out/coverage
+
+      # step 2: Install tools
+      - name: Install tools
+        run: |
+          export GOPATH="$HOME/go/"
+          export PATH=$PATH:$GOPATH/bin
+          go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+          go get code.google.com/p/go.tools/cmd/cover
+          go get github.com/t-yuki/gocover-cobertura
+
+      # step 5: Install dependencies
+      - name: Download dependencies
+        run: go mod download
+
+      # step 6: Build
+      - name: Build
+        run: go build -o out/bin/hostsctl ./cmd/hostsctl 
+
+      # step 7: Test
+      - name: Test
+        run: go test -json -v -coverprofile=coverage-${{ matrix.os }}.txt ./... 2>&1 | gotestfmt
+
+      # step 8: Upload results
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.os }}
+          path: coverage-${{ matrix.os }}.txt
       
-      # step 4: Run test
-      - name: go test
-        run: go test
+      # # step 7: Calculate coverage
+      # - name: Convert go coverage to corbetura format
+      #   run: gocover-cobertura < coverage.txt > coverage.xml
 
   # This workflow contains a single job called "build"
   build:
