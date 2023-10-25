@@ -53,7 +53,10 @@ jobs:
 
       # step 7: Test
       - name: Test
-        run: go test -json -v -coverprofile=coverage-${{ matrix.os }}.txt ./... 2>&1 | gotestfmt
+        run: |
+          export GOPATH="$HOME/go/"
+          export PATH=$PATH:$GOPATH/bin
+          go test -json -v -coverprofile=coverage-${{ matrix.os }}.txt ./... 2>&1 | gotestfmt
 
       # step 8: Upload results
       - name: Upload test results
