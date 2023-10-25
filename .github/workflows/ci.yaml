@@ -81,7 +81,7 @@ jobs:
         run: |
           export GOPATH="$HOME/go/"
           export PATH=$PATH:$GOPATH/bin
-          go install github.com/t-yuki/gocover-cobertura 
+          go install github.com/t-yuki/gocover-cobertura@latest
 
       # step 3: Download results
       - name: Download test results
