@@ -42,8 +42,6 @@ jobs:
           export GOPATH="$HOME/go/"
           export PATH=$PATH:$GOPATH/bin
           go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
-          go get code.google.com/p/go.tools/cmd/cover
-          go get github.com/t-yuki/gocover-cobertura
 
       # step 5: Install dependencies
       - name: Download dependencies
@@ -65,6 +63,10 @@ jobs:
           path: coverage-${{ matrix.os }}.txt
       
       # # step 7: Calculate coverage
+
+      # go get code.google.com/p/go.tools/cmd/cover
+      # go get github.com/t-yuki/gocover-cobertura
+
       # - name: Convert go coverage to corbetura format
       #   run: gocover-cobertura < coverage.txt > coverage.xml
 
