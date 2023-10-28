@@ -75,14 +75,13 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: false
 
       # step 2: Install tools
       - name: Install tools
         run: |
           export GOPATH="$HOME/go/"
           export PATH=$PATH:$GOPATH/bin
-          go install github.com/t-yuki/gocover-cobertura@latest
+          go install github.com/boumenot/gocover-cobertura@latest
 
       # step 3: Download results
       - name: Download test results
