@@ -9,6 +9,7 @@ import (
 
 var (
 	rootCmd *cobra.Command
+	VERSION string = "developer <no version>"
 )
 
 func main() {
@@ -20,5 +21,7 @@ func main() {
 }
 
 func init() {
-	rootCmd = commands.NewCmdRoot()
+	rootCmd = commands.NewCmdRoot(commands.RootParams{
+		Version: VERSION,
+	})
 }

@@ -1,0 +1,60 @@
+project_name: hostsctl
+dist: out/dist
+
+builds:
+  - binary: hostsctl
+    main: ./cmd/hostsctl
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - 386
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w -X main.VERSION=v{{.Version}}
+      # - -s -w -X version.version=v{{.Version}}
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- if eq .Os "darwin" }}osx
+      {{- else}}{{ .Os }}{{ end }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}x86_32
+      {{- else }}{{ .Arch }}{{ end }}_
+      {{- .Version }}
+    files:
+      - LICENSE
+
+
+
+
+# brews:
+#   -
+#     ids:
+#       - default
+#     tap:
+#       owner: netbirdio
+#       name: homebrew-tap
+#       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+#     commit_author:
+#       name: Netbird
+#       email: dev@netbird.io
+#     description: Netbird project.
+#     download_strategy: CurlDownloadStrategy
+#     homepage: https://netbird.io/
+#     license: "BSD3"
+#     test: |
+#       system "#{bin}/{{ .ProjectName	}} version"
+
