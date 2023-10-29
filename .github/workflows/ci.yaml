@@ -22,16 +22,16 @@ jobs:
         shell: bash
         
     steps:
-      # step 1: Set up go
+      # step 1: Checkout repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # step 2: Set up go
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
       
-      # step 2: Checkout repository code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       # step 3: Create output folder
       - name: Create output folder
         run: mkdir -p out/coverage
@@ -70,35 +70,38 @@ jobs:
     needs: [test]
     
     steps:
-      # step 1: Set up go
+      # step 1: Checkout repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      # step 2: Set up go
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      # step 2: Install tools
+      # step 3: Install tools
       - name: Install tools
         run: |
           export GOPATH="$HOME/go/"
           export PATH=$PATH:$GOPATH/bin
           go install github.com/t-yuki/gocover-cobertura@latest
 
-      # step 3: Download results
+      # step 4: Download results
       - name: Download test results
         uses: actions/download-artifact@v3
         with:
           path: data/coverage/
 
-      # step 4: Calculate coverage
+      # step 5: Calculate coverage
       - name: Convert go coverage to corbetura format
         run: |
           export GOPATH="$HOME/go/"
           export PATH=$PATH:$GOPATH/bin
           mkdir -p out/coverage          
           shopt -s globstar
-          cat  data/coverage/coverage-ubuntu-latest/coverage-ubuntu-latest.txt | gocover-cobertura > out/coverage/coverage.xml
+          cat ./data/**/cov*.txt | gocover-cobertura > out/coverage/coverage.xml
 
-      # cat ./data/**/cov*.txt | gocover-cobertura > out/coverage/coverage.xml
 
       - name: Check1
         run: |
