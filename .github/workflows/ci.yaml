@@ -104,6 +104,7 @@ jobs:
           ls out/coverage/
           ls data/coverage/coverage-ubuntu-latest
           cat out/coverage/coverage.xml
+          cat data/coverage/coverage-ubuntu-latest/coverage-ubuntu-latest.txt
 
       # step 5: Generate coverage
       - name: Generate code coverage report
