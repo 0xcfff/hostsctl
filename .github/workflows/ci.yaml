@@ -94,7 +94,7 @@ jobs:
         run: |
           export GOPATH="$HOME/go/"
           export PATH=$PATH:$GOPATH/bin
-          gocover-cobertura < $(ls data/coverage/coverage-*.txt) > out/coverage/coverage.xml
+          gocover-cobertura < $(ls data/coverage/**/coverage-*.txt) > out/coverage/coverage.xml
 
       # step 5: Generate coverage
       - name: Generate code coverage report
