@@ -60,8 +60,9 @@ func NewCmdAliasList() *cobra.Command {
 	opt := &AliasListOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "list [(-o|--output)=name] [filter]",
-		Short: fmt.Sprintf("Lists IP addresses and aliases defined in %s", hosts.EtcHosts.Path()),
+		Use:     "list [(-o|--output)=name] [filter]",
+		Short:   fmt.Sprintf("Lists IP addresses and aliases defined in %s", hosts.EtcHosts.Path()),
+		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())

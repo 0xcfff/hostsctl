@@ -49,8 +49,9 @@ func NewCmdBlockList() *cobra.Command {
 	opt := &BlockListOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "list [(-o|--output)=name] [filter]",
-		Short: fmt.Sprintf("Lists IP aliases blocks defined in %s", hosts.EtcHosts.Path()),
+		Use:     "list [(-o|--output)=name] [filter]",
+		Short:   fmt.Sprintf("Lists IP aliases blocks defined in %s", hosts.EtcHosts.Path()),
+		Aliases: []string{"ls"},
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())
