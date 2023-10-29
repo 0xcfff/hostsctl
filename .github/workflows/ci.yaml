@@ -97,6 +97,9 @@ jobs:
           mkdir -p out/coverage
           gocover-cobertura < $(ls data/coverage/**/coverage-*.txt) > out/coverage/coverage.xml
 
+      - name: Check1
+        run: ls out/coverage/
+
       # step 5: Generate coverage
       - name: Generate code coverage report
         uses: irongut/CodeCoverageSummary@v1.3.0
