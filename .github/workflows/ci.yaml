@@ -64,6 +64,7 @@ jobs:
         with:
           name: coverage-${{ matrix.os }}
           path: coverage-${{ matrix.os }}.txt
+          retention-days: 1
       
   coverage:
     runs-on: ubuntu-latest
