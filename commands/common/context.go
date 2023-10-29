@@ -1,0 +1,27 @@
+package common
+
+import (
+	"context"
+
+	"github.com/spf13/afero"
+)
+
+type commandContextValue int
+
+const (
+	ctxCustomFileSystem commandContextValue = iota
+)
+
+// Overrides filesystem used by commands
+func WithCustomFilesystem(ctx context.Context, fs afero.Fs) context.Context {
+	return context.WithValue(ctx, ctxCustomFileSystem, fs)
+}
+
+// Returns filesystem override if any
+func FileSystem(ctx context.Context) afero.Fs {
+	fso := ctx.Value(ctxCustomFileSystem)
+	if fso != nil {
+		return fso.(afero.Fs)
+	}
+	return nil
+}

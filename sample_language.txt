@@ -1,0 +1,207 @@
+###### URL
+# @sync http://192.168.100.2/dns-records?domain=.sync-ops.com&domain=.sync-svc.com
+# @unsafe true
+# @interval auto
+
+# @sync source=http://192.168.100.2/dns-records?domain=.sync-ops.com&domain=.sync-svc.com, unsafe=true, interval=auto
+
+###### kubectl
+# @sync kubectl
+# @context microk8s
+# @interval auto
+
+# @sync kubectl
+# @params context=microk8s, interval=auto
+
+# @sync source=kubectl, context=microk8s, interval=auto
+
+###### local file
+# @sync /home/user1/temp_dns
+
+
+
+###### sync block (output)
+
+# @begin <config_hash>-<data_hash>
+# @end <config_hash>-<data_hash>
+
+
+## Parsers
+https://github.com/alecthomas/participle/blob/master/_examples/sql/main.go
+
+
+add function which detects line endings in the parsed file. If can't detect, use OS version
+
+dom or syntax - this should contain low-level constructs
+dom or model - one of these should contain high-level abstraction which could be serialized to syntax constructs
+
+syntax - syntax tree, root - document, leaves - line-level objects (parse + parse options/write) - invisible to end user
+model - model based on syntax tree - hosts document and nested blocks (construct/generate markup or format + generate options). 
+This level objects should understand such things as whether IP is a system and its deletion can bring an issue.
+
+generation modes:
+* minimal intrusion - as close to the source as possible
+* re-format - re-format entire document according to generate options
+use strategies (pattern) to switch between generation modes
+
+
+#####################################
+# cmdline
+
+dnspipe version
+dnspipe hosts source list
+dnspipe hosts source add
+dnspipe hosts source query
+dnspipe hosts ip list
+dnspipe hosts ip add
+dnspipe hosts sync --watch
+dnspipe source list
+dnspipe source add
+dnspipe source query
+dnspipe dns hijack
+dnspipe dns proxy
+dnspipe dns restore
+dnspipe serve [src] [tgt] [profile]
+
+#####################################
+# cmdline - updated concept
+
+hostsctl version
+hostsctl ip list 
+hostsctl ip add [ip] [dns] --group [group_id]
+hostsctl ip edit
+hostsctl ip delete [ip or dns]
+hostsctl alias list 
+hostsctl alias add [ip] [dns] --group [group_id]
+hostsctl alias edit
+hostsctl alias delete [ip or dns]
+hostsctl block list
+hostsctl block add [id?] [text]
+hostsctl block edit
+hostsctl block delete
+hostsctl block clean [id or index] - removes all IPs in the block
+hostsctl group list
+hostsctl group add [id?] [text]
+hostsctl group edit
+hostsctl group delete
+hostsctl group clean [id or index] - removes all IPs in the block
+hostsctl config print
+hostsctl config format
+hostsctl config edit
+hostsctl config backup
+hostsctl config restore
+
+
+hostsctl version
+hostsctl get ip [filters]
+hostsctl get block [filters]
+hostsctl add ip
+hostsctl add ip -- [params opt multiline]
+hostsctl add block
+hostsctl delete ip [filters]
+hostsctl delete block [filters]
+hostsctl edit ip
+hostsctl edit block
+hostsctl edit config
+hostsctl show config
+hostsctl show location
+
+hostsctl !192.168.1.2 my.domain.test
+hostsctl +192.168.1.2 my.domain.test
+hostsctl -192.168.1.2
+hostsctl -my.domain.test
+
+hostsctl -192.168.1.2 +192.168.1.2 my.domain.test
+
+
+##################
+TODO
+add ParseFlags to EtcHosts parsing logic
+
+
+# How to retrieve data from K8s
+# Cluster Nodes
+kubectl get nodes -o jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address} {.status.addresses[?(@.type=="Hostname")].address}{"\n"}'
+kubectl get nodes -o custom-columns='"IP":.status.addresses[?(@.type=="InternalIP")].address,ALIAS:.status.addresses[?(@.type=="Hostname")].address' --no-headers
+
+
+kubectl get nodes -o custom-columns='"IP":.status.loadBalancer.ingress.[0].ip,ALIAS:.metadata.name' --no-headers
+kubectl get nodes -o jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address} {.status.addresses[?(@.type=="Hostname")].address}{"\n"}'
+
+kubectl get svc -A -o custom-columns='"IP":.status.loadBalancer.ingress[0].ip,ALIAS:.metadata.name' --no-headers
+kubectl get svc -A -o jsonpath='{range .items[?(@.status.loadBalancer.ingress[0].ip)]}{.status.loadBalancer.ingress[0].ip} {.metadata.name}{"\n"}'
+
+
+######################
+Sample Output
+
+Add GRP and SYS columns to output
+GRP  SYS  IP          ALIAS
+[1]   +   127.0.0.1   localhost
+          127.0.0.2   router
+          127.0.0.3   printer
+[2]   +   ::1         ip6-localhost
+      +   ::1         ip6-loopback
+      +   e00::0      ip6-localnet
+      +   e00::0      ip6-mcastprefix
+      +   e00::0      ip6-allnodes
+      +   e00::0      ip6-allrouters
+[3]       10.0.0.101  hhost1
+          10.0.0.102  hhost2
+
+
+Add GRP and SYS columns to output
+BLK  SYS  IP          ALIAS
+[1]   +   127.0.0.1   localhost
+          127.0.0.2   router
+          127.0.0.3   printer
+[2]   +   ::1         ip6-localhost
+      +   ::1         ip6-loopback
+      +   e00::0      ip6-localnet
+      +   e00::0      ip6-mcastprefix
+      +   e00::0      ip6-allnodes
+      +   e00::0      ip6-allrouters
+[3]       10.0.0.101  hhost1
+          10.0.0.102  hhost2
+
+
+######################
+Sample Hosts Content
+
+127.0.0.1	localhost
+127.0.0.2	router
+127.0.0.3	printer
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+# [*] localnet - local home network
+10.0.0.101 hhost1
+10.0.0.102 hhost2
+
+
+######################
+Sample Hosts Content
+
+127.0.0.1	localhost
+127.0.0.2	router
+127.0.0.3	printer
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+# [ 101 ] prj1-dev local home network
+10.0.0.101 hhost1
+10.0.0.102 hhost2
+
+# [ 102 ] prj1-dev02 onprem setup
+10.0.0.101 hhost1
+10.0.0.102 hhost2

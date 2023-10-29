@@ -1,0 +1,154 @@
+name: CI
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+env:
+  GO_VERSION: "1.21"
+
+jobs:
+
+  test:
+    name: test
+    runs-on: "${{matrix.os}}"
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    defaults:
+      run:
+        shell: bash
+        
+    steps:
+      # step 1: Checkout repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # step 2: Set up go
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      
+      # step 3: Create output folder
+      - name: Create output folder
+        run: mkdir -p out/coverage
+
+      # step 2: Install tools
+      - name: Install tools
+        run: |
+          export GOPATH="$HOME/go/"
+          export PATH=$PATH:$GOPATH/bin
+          go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+
+      # step 5: Install dependencies
+      - name: Download dependencies
+        run: go mod download
+
+      # step 6: Build
+      - name: Build
+        run: go build -o out/bin/hostsctl ./cmd/hostsctl 
+
+      # step 7: Test
+      - name: Test
+        run: |
+          export GOPATH="$HOME/go/"
+          export PATH=$PATH:$GOPATH/bin
+          go test -json -v -coverprofile=coverage-${{ matrix.os }}.txt ./... 2>&1 | gotestfmt
+
+      # step 8: Upload results
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.os }}
+          path: coverage-${{ matrix.os }}.txt
+      
+  coverage:
+    runs-on: ubuntu-latest
+    needs: [test]
+    
+    steps:
+      # step 1: Checkout repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      # step 2: Set up go
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      # step 3: Install tools
+      - name: Install tools
+        run: |
+          export GOPATH="$HOME/go/"
+          export PATH=$PATH:$GOPATH/bin
+          go install github.com/t-yuki/gocover-cobertura@latest
+
+      # step 4: Download results
+      - name: Download test results
+        uses: actions/download-artifact@v3
+        with:
+          path: data/coverage/
+
+      # step 5: Calculate coverage
+      - name: Convert go coverage to corbetura format
+        run: |
+          export GOPATH="$HOME/go/"
+          export PATH=$PATH:$GOPATH/bin
+          mkdir -p out/coverage          
+          shopt -s globstar
+          cat ./data/**/cov*.txt | gocover-cobertura > out/coverage/coverage.xml
+
+
+      # step 6: Generate coverage
+      - name: Generate code coverage report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: ./out/coverage/coverage.xml
+          badge: false
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '60 80'
+
+      # step 7: Generate coverage
+      - name: Report coverage to build comments
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+  
+      # step 8: Generate coverage
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [coverage]
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
