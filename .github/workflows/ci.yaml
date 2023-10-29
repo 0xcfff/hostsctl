@@ -94,7 +94,8 @@ jobs:
         run: |
           export GOPATH="$HOME/go/"
           export PATH=$PATH:$GOPATH/bin
-          mkdir -p out/coverage
+          mkdir -p out/coverage          
+          shopt -s globstar
           gocover-cobertura < $(ls data/coverage/**/coverage-*.txt) > out/coverage/coverage.xml
 
       - name: Check1
