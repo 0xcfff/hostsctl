@@ -100,6 +100,7 @@ jobs:
 
       - name: Check1
         run: |
+          echo $(ls data/coverage/**/coverage-*.txt)
           ls out/coverage/
           ls data/coverage/coverage-ubuntu-latest
           cat out/coverage/coverage.xml
