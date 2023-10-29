@@ -63,14 +63,3 @@ Report issues in the repository [issue tracker](https://github.com/0xcfff/hostsc
 
 # Getting involved
 General instructions on how to contribute can be found in [CONTRIBUTING](CONTRIBUTING.md).
-
-# TODO
-* Implement clear/clean for a block
-* Implement check on deletion of a system alias
-* Update readme
-* Create CI
-* Publish to marketplaces
-
-* cleanup hosts backend from not used dependencies
-* implement GlobalOptions, move format determining logic there, make it customizable as per command
-* How to implement build tasks https://www.alfusjaganathan.com/blogs/psake-build-automation-net-dotnet/
