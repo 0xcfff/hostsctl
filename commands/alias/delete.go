@@ -22,9 +22,10 @@ func NewCmdAliasDelete() *cobra.Command {
 	opt := &AliasDeleteOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "delete [ip or alias]",
-		Short: fmt.Sprintf("Removes IP alias from %s file", hosts.EtcHosts.Path()),
-		Args:  cobra.ArbitraryArgs,
+		Use:     "delete [ip or alias]",
+		Short:   fmt.Sprintf("Removes IP alias from %s file", hosts.EtcHosts.Path()),
+		Aliases: []string{"remove", "rm"},
+		Args:    cobra.ArbitraryArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())

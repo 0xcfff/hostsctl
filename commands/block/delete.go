@@ -25,9 +25,10 @@ func NewCmdBlockDelete() *cobra.Command {
 	opt.blockId = emptyId
 
 	cmd := &cobra.Command{
-		Use:   "delete [id or name]",
-		Short: fmt.Sprintf("Removes IP aliases block from %s file", hosts.EtcHosts.Path()),
-		Args:  cobra.ArbitraryArgs,
+		Use:     "delete [id or name]",
+		Short:   fmt.Sprintf("Removes IP aliases block from %s file", hosts.EtcHosts.Path()),
+		Aliases: []string{"remove", "rm"},
+		Args:    cobra.ArbitraryArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(opt.Complete(cmd, args))
 			cobra.CheckErr(opt.Validate())
