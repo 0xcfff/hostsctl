@@ -13,6 +13,13 @@ A small tool to manage alias records in local /etc/hosts file (or %SYSTEM32%\Dri
 # Installation
 There are several options to install the tool.
 
+## Homebrew
+For those who uses Homebrew on Mac or Linux:
+```
+brew tap 0xcfff/tap
+brew install hostsctl
+```
+
 ## Manual Installation
 Download [latest release](https://github.com/0xcfff/hostsctl/releases/latest) from GitHub for your OS version. Unarchive the binaries and copy to a folder added to path environment variable.
 
