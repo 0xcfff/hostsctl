@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 // Container object for dom blocks found during parsing of the original document

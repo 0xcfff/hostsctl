@@ -4,7 +4,7 @@ import (
 	"net"
 	"strings"
 
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 var (

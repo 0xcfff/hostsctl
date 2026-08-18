@@ -10,7 +10,7 @@ type BlockModel struct {
 	Name               string `json:"name"              yaml:"name"`
 	Comment            string `json:"comment,omitempty" yaml:"comment,omitempty"`
 	AliasesCount       int    `json:"count,omitempty"   yaml:"count,omitempty"`
-	SystemAliasesCount int    `json:"-"   				yaml:"-"`
+	SystemAliasesCount int    `json:"-"                  yaml:"-"`
 }
 
 func NewBlocksModels(doc *dom.Document) []*BlockModel {

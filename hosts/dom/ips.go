@@ -6,7 +6,7 @@ import (
 
 	"github.com/0xcfff/hostsctl/hosts/syntax"
 	"github.com/0xcfff/hostsctl/iotools"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 const idNotSet = -1

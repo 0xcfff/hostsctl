@@ -12,7 +12,11 @@ func LinesSplitterRespectEndNewLineFunc() bufio.SplitFunc {
 		advance, token, err = bufio.ScanLines(data, atEOF)
 		if atEOF && advance == 0 && token == nil && hadCr {
 			hadCr = false
-			return 0, nil, bufio.ErrFinalToken
+			// Return a non-nil empty token: Go 1.22 changed bufio.Scanner to
+			// stop emitting the final token when ErrFinalToken carries a nil
+			// token. An empty (non-nil) slice preserves the trailing-newline
+			// line while keeping the same behavior on older Go versions.
+			return 0, []byte{}, bufio.ErrFinalToken
 		}
 		hadCr = len(token) != advance
 		return advance, token, err
