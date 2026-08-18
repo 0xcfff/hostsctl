@@ -29,7 +29,7 @@ jobs:
 
       # step 2: Set up go
       - name: Set up Go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
       
@@ -61,7 +61,7 @@ jobs:
 
       # step 8: Upload results
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.os }}
           path: coverage-${{ matrix.os }}.txt
@@ -78,7 +78,7 @@ jobs:
         
       # step 2: Set up go
       - name: Set up Go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -91,7 +91,7 @@ jobs:
 
       # step 4: Download results
       - name: Download test results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: data/coverage/
 
@@ -141,7 +141,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
 
