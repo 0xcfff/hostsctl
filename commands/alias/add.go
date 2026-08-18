@@ -10,7 +10,7 @@ import (
 	"github.com/0xcfff/hostsctl/hosts/dom"
 	"github.com/0xcfff/hostsctl/iptools"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type AliasAddOptions struct {

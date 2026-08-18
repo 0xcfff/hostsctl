@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/0xcfff/hostsctl/commands/common"
@@ -12,7 +14,6 @@ import (
 	"github.com/0xcfff/hostsctl/iotools"
 	"github.com/0xcfff/hostsctl/iptools"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )
 
@@ -71,8 +72,8 @@ func NewCmdAliasList() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&opt.noHeaders, "no-headers", opt.noHeaders, "Disable printing headers")
-	cmd.Flags().StringVarP(&opt.output, "output", "o", opt.output, fmt.Sprintf("Output format. One of %s", strings.Join(maps.Keys(formats), ",")))
-	cmd.Flags().StringVarP(&opt.arrange, "arrange", "a", opt.arrange, fmt.Sprintf("IPs output grouping. One of %s.", strings.Join(maps.Keys(groupings), ",")))
+	cmd.Flags().StringVarP(&opt.output, "output", "o", opt.output, fmt.Sprintf("Output format. One of %s", strings.Join(slices.Sorted(maps.Keys(formats)), ",")))
+	cmd.Flags().StringVarP(&opt.arrange, "arrange", "a", opt.arrange, fmt.Sprintf("IPs output grouping. One of %s.", strings.Join(slices.Sorted(maps.Keys(groupings)), ",")))
 
 	return cmd
 }

@@ -2,7 +2,7 @@ package dom
 
 import (
 	"github.com/0xcfff/hostsctl/hosts/syntax"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type BlockType int

@@ -7,7 +7,6 @@ var (
 	rxIPv6Address = regexp.MustCompile(`^[\da-fA-F]{0,}:[\da-fA-F]{0,}:[\da-fA-F]{0,}(:[\da-fA-F]{0,}){0,5}$`)
 )
 
-
 // Returns true if specified value is IPv4
 func IsIPv4(value string) bool {
 	return rxIPv4Address.MatchString(value)

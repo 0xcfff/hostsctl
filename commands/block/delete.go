@@ -9,7 +9,7 @@ import (
 	"github.com/0xcfff/hostsctl/hosts"
 	"github.com/0xcfff/hostsctl/hosts/dom"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type BlockDeleteOptions struct {

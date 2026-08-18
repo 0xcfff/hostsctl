@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/0xcfff/hostsctl/hosts/dom"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type AliasModel struct {
